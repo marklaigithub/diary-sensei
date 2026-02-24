@@ -96,6 +96,21 @@
     translations.set({});
   }
 
+  async function handleDateInputChange(newDate: string) {
+    currentDate.set(newDate);
+    // If month/year changed, reload entries
+    const parts = newDate.split('-');
+    if (parts.length === 3) {
+      const newYear = parseInt(parts[0]);
+      const newMonth = parseInt(parts[1]);
+      if (newYear !== yearVal || newMonth !== monthVal) {
+        selectedYear.set(newYear);
+        selectedMonth.set(newMonth);
+        await loadEntries();
+      }
+    }
+  }
+
   async function handleMonthChange(event: CustomEvent<{year: number, month: number}>) {
     selectedYear.set(event.detail.year);
     selectedMonth.set(event.detail.month);
@@ -171,6 +186,7 @@
     const corrected = translationsVal[langKey];
     if (corrected) {
       editorContent.set(corrected);
+      translations.set({});
     }
   }
 
@@ -249,7 +265,7 @@
               type="date"
               class="date-input"
               value={dateVal}
-              oninput={(e) => currentDate.set((e.target as HTMLInputElement).value)}
+              oninput={(e) => handleDateInputChange((e.target as HTMLInputElement).value)}
             />
           </div>
           {#if currentEntryVal?.meta?.created_at || currentEntryVal?.meta?.updated_at}
@@ -291,25 +307,8 @@
 
   <!-- Result panel -->
   <aside class="result-panel">
-    <!-- Print-only header with title and date -->
-    <div class="print-only print-header">
-      <h1>{titleVal || `${dateVal} diary`}</h1>
-      <div class="print-date">{dateVal}</div>
-    </div>
-
     {#if modeVal === 'correction'}
       <Correction on:apply={handleApplyCorrection} />
-      <!-- Print-only: clean corrected text without diff -->
-      {#if Object.keys(translationsVal).length > 0}
-        <div class="print-only print-section">
-          <div class="print-section-label">Original</div>
-          <div class="print-text">{editorVal}</div>
-        </div>
-        <div class="print-only print-section">
-          <div class="print-section-label">Corrected</div>
-          <div class="print-text">{translationsVal[selectedLangsVal[0]] || ''}</div>
-        </div>
-      {/if}
     {:else}
       <Translation />
     {/if}
@@ -322,6 +321,38 @@
       </div>
     {/if}
   </aside>
+</div>
+
+<!-- Print-only view: completely separate from the app layout -->
+<div class="print-view">
+  <div class="print-header">
+    <h1>{titleVal || `${dateVal} diary`}</h1>
+    <div class="print-date">{dateVal}</div>
+  </div>
+
+  {#if modeVal === 'correction'}
+    <div class="print-section">
+      <div class="print-section-label">Original</div>
+      <div class="print-text">{editorVal}</div>
+    </div>
+    {#if translationsVal[selectedLangsVal[0]]}
+      <div class="print-section">
+        <div class="print-section-label">Corrected</div>
+        <div class="print-text">{translationsVal[selectedLangsVal[0]]}</div>
+      </div>
+    {/if}
+  {:else}
+    <div class="print-section">
+      <div class="print-section-label">Original</div>
+      <div class="print-text">{editorVal}</div>
+    </div>
+    {#each Object.entries(translationsVal) as [langCode, text]}
+      <div class="print-section">
+        <div class="print-section-label">{configVal?.languages?.find(l => l.code === langCode)?.name || langCode}</div>
+        <div class="print-text">{text}</div>
+      </div>
+    {/each}
+  {/if}
 </div>
 
 <style>
@@ -535,5 +566,9 @@
     border-top: 1px solid var(--border-light);
     display: flex;
     justify-content: flex-end;
+  }
+
+  :global(.print-view) {
+    display: none;
   }
 </style>

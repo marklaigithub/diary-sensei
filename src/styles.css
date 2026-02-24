@@ -107,41 +107,22 @@ input:focus, textarea:focus, select:focus {
   text-decoration: line-through;
 }
 
-/* Print-only elements: hidden on screen, shown when printing */
-.print-only {
-  display: none !important;
-}
-
 /* Print styles */
 @media print {
-  .sidebar, .toolbar, .mode-selector, .no-print,
-  .editor-panel, .panel-footer, .panel-header,
-  .action-bar, .btn-accept,
-  .correction-panel, .copy-btn {
+  /* Hide the entire app UI */
+  .app-layout {
     display: none !important;
   }
 
-  .print-only {
+  /* Show the print-only view */
+  .print-view {
     display: block !important;
+    padding: 20px;
   }
 
   body {
     background: white;
     color: black;
-  }
-
-  .app-layout {
-    display: block !important;
-  }
-
-  .main-content {
-    display: none !important;
-  }
-
-  .result-panel {
-    width: 100% !important;
-    max-width: 100% !important;
-    background: white !important;
   }
 
   .print-header {

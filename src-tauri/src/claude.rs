@@ -5,13 +5,15 @@ use serde::{Deserialize, Serialize};
 
 pub fn correction_prompt(language: &str) -> String {
     format!(
-        "You are a skilled {} language teacher. \
-        The student's diary may contain text in multiple languages. \
-        Only correct the {} portions — fix grammar, unnatural expressions, and word choice. \
-        Preserve ALL text in other languages exactly as-is. \
-        Preserve all emoji, image references (![...](path)), and formatting. \
-        Return ONLY the corrected text, nothing else.",
-        language, language
+        "You are a {} language teacher correcting a student's diary.\n\n\
+        RULES:\n\
+        1. The diary contains text in MULTIPLE languages.\n\
+        2. ONLY correct text written in {} — fix grammar, unnatural expressions, and word choice.\n\
+        3. Any text in other languages (English, Chinese, Korean, etc.) MUST be kept EXACTLY as-is, character for character, in the same position.\n\
+        4. Do NOT remove, translate, or modify text that is not in {}.\n\
+        5. Keep all line breaks, emoji, and image references (![...](path)) unchanged.\n\
+        6. Return the COMPLETE diary text with only the {} portions corrected. No explanations.",
+        language, language, language, language
     )
 }
 

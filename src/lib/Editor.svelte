@@ -44,21 +44,18 @@
     const selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
 
     if (!selection.trim()) {
-      // No selection — let default context menu show
       return;
     }
 
     e.preventDefault();
+    e.stopPropagation();
     selectedText = selection;
-    showContextMenu = true;
     showBubble = false;
 
-    // Position context menu at mouse location
-    const editorRect = textarea.closest('.editor-wrapper')?.getBoundingClientRect();
-    if (editorRect) {
-      contextMenuX = e.clientX - editorRect.left;
-      contextMenuY = e.clientY - editorRect.top;
-    }
+    // Use fixed positioning with raw mouse coordinates
+    contextMenuX = e.clientX;
+    contextMenuY = e.clientY;
+    showContextMenu = true;
   }
 
   function handleTranslateSelect(langCode: string, langName: string) {
@@ -66,9 +63,9 @@
     bubbleLang = langName;
     bubbleText = '';
     bubbleLoading = true;
-    showBubble = true;
     bubbleX = contextMenuX;
     bubbleY = contextMenuY;
+    showBubble = true;
 
     dispatch('quickTranslate', {
       text: selectedText,
@@ -90,11 +87,7 @@
     bubbleText = '';
   }
 
-  function closeContextMenu() {
-    showContextMenu = false;
-  }
-
-  function handleDocClick(e: MouseEvent) {
+  function handleWindowClick(e: MouseEvent) {
     const target = e.target as HTMLElement;
     if (showContextMenu && !target.closest('.context-menu')) {
       showContextMenu = false;
@@ -105,7 +98,7 @@
   }
 </script>
 
-<svelte:window onclick={handleDocClick} />
+<svelte:window on:mousedown={handleWindowClick} />
 
 <div class="editor-wrapper">
   <textarea
@@ -116,50 +109,50 @@
     placeholder={getPlaceholder()}
     spellcheck="false"
   ></textarea>
-
-  {#if showContextMenu}
-    <div class="context-menu" style="left: {contextMenuX}px; top: {contextMenuY}px;">
-      <div class="context-menu-header">Translate to...</div>
-      {#each configVal?.languages || [] as lang}
-        <button
-          class="context-menu-item"
-          onclick={() => handleTranslateSelect(lang.code, lang.name)}
-        >
-          {lang.name}
-        </button>
-      {/each}
-    </div>
-  {/if}
-
-  {#if showBubble}
-    <div class="translate-bubble" style="left: {bubbleX}px; top: {bubbleY + 24}px;">
-      <div class="bubble-header">
-        <span class="bubble-lang">{bubbleLang}</span>
-        {#if bubbleText}
-          <button class="bubble-copy" onclick={copyBubbleText} title="Copy">📋</button>
-        {/if}
-        <button class="bubble-close" onclick={closeBubble}>✕</button>
-      </div>
-      <div class="bubble-content">
-        {#if bubbleLoading}
-          <div class="bubble-loading">
-            <span class="bubble-spinner"></span>
-            Translating...
-          </div>
-        {:else}
-          {bubbleText}
-        {/if}
-      </div>
-    </div>
-  {/if}
 </div>
+
+<!-- Context menu and bubble use position:fixed to avoid overflow:hidden clipping -->
+{#if showContextMenu}
+  <div class="context-menu" style="left: {contextMenuX}px; top: {contextMenuY}px;">
+    <div class="context-menu-header">Translate to...</div>
+    {#each configVal?.languages || [] as lang}
+      <button
+        class="context-menu-item"
+        onclick={() => handleTranslateSelect(lang.code, lang.name)}
+      >
+        {lang.name}
+      </button>
+    {/each}
+  </div>
+{/if}
+
+{#if showBubble}
+  <div class="translate-bubble" style="left: {bubbleX}px; top: {bubbleY + 24}px;">
+    <div class="bubble-header">
+      <span class="bubble-lang">{bubbleLang}</span>
+      {#if bubbleText}
+        <button class="bubble-copy" onclick={copyBubbleText} title="Copy">📋</button>
+      {/if}
+      <button class="bubble-close" onclick={closeBubble}>✕</button>
+    </div>
+    <div class="bubble-content">
+      {#if bubbleLoading}
+        <div class="bubble-loading">
+          <span class="bubble-spinner"></span>
+          Translating...
+        </div>
+      {:else}
+        {bubbleText}
+      {/if}
+    </div>
+  </div>
+{/if}
 
 <style>
   .editor-wrapper {
     flex: 1;
     overflow: hidden;
     display: flex;
-    position: relative;
   }
 
   .editor-textarea {
@@ -180,15 +173,15 @@
     color: var(--text-muted);
   }
 
-  /* Context menu */
+  /* Context menu — fixed position to escape overflow:hidden */
   .context-menu {
-    position: absolute;
+    position: fixed;
     background: var(--bg-panel);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 160px;
-    z-index: 100;
+    z-index: 1000;
     overflow: hidden;
   }
 
@@ -216,16 +209,16 @@
     background: var(--bg-hover);
   }
 
-  /* Translation bubble */
+  /* Translation bubble — fixed position */
   .translate-bubble {
-    position: absolute;
+    position: fixed;
     background: var(--bg-panel);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     min-width: 200px;
     max-width: 360px;
-    z-index: 100;
+    z-index: 1000;
   }
 
   .bubble-header {
