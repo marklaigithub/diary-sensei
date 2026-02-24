@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "diary-language",
+  "productName": "diary-sensei",
   "version": "0.2.0",
-  "identifier": "com.diary-language.app",
+  "identifier": "com.diary-sensei.app",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Diary Language",
+        "title": "Diary Sensei",
         "width": 1200,
         "height": 800,
         "minWidth": 900,

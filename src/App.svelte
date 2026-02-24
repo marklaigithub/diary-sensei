@@ -178,7 +178,7 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1 class="app-title">Diary Language</h1>
+      <h1 class="app-title">Diary Sensei</h1>
       <div class="sidebar-actions">
         <ThemeSwitcher />
         <button class="icon-btn" onclick={() => showSettings.set(true)} title="Settings">
