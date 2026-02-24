@@ -1,0 +1,29 @@
+:root[data-theme="warm-light"] {
+  --bg-sidebar: #f5f0eb;
+  --bg-main: #faf8f5;
+  --bg-panel: #ffffff;
+  --bg-hover: #ede7e0;
+  --bg-active: #e8d5c4;
+  --text-primary: #2c2c2c;
+  --text-secondary: #7a7a7a;
+  --text-muted: #a0a0a0;
+  --accent: #d4a574;
+  --accent-hover: #c49564;
+  --border: #e8e0d8;
+  --border-light: #f0e8e0;
+  --diff-added-bg: #d4edda;
+  --diff-added-text: #155724;
+  --diff-removed-bg: #f8d7da;
+  --diff-removed-text: #721c24;
+  --calendar-today: #e8d5c4;
+  --calendar-has-entry: #d4a574;
+  --calendar-hover: #ede7e0;
+  --btn-primary: #d4a574;
+  --btn-primary-hover: #c49564;
+  --btn-primary-text: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #e8e0d8;
+  --shadow: rgba(0, 0, 0, 0.05);
+  --radius: 8px;
+  --radius-sm: 4px;
+}
