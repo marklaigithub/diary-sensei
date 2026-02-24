@@ -244,7 +244,9 @@ fn parse_frontmatter(content: &str) -> Option<EntryMeta> {
         return None;
     }
     let rest = &content[3..];
-    let end = rest.find("---")?;
+    // Find closing "---" that appears on its own line (after a newline)
+    let end = rest.find("\n---\n")
+        .or_else(|| rest.find("\n---").filter(|&i| i + 4 >= rest.len()))?;
     let yaml = rest[..end].trim();
 
     let mut id = String::new();
@@ -261,16 +263,22 @@ fn parse_frontmatter(content: &str) -> Option<EntryMeta> {
         let line = line.trim();
         if let Some((key, value)) = line.split_once(':') {
             let key = key.trim();
-            // For created_at/updated_at, the value contains colons (e.g. "2026-02-24T14:30:52")
-            // so we need to rejoin everything after the first colon
-            let value = if key == "created_at" || key == "updated_at" {
-                line.splitn(2, ':').nth(1).unwrap_or("").trim().trim_matches('"')
+            // For fields that may contain colons (timestamps, titles with times),
+            // rejoin everything after the first colon
+            let value = if key == "created_at" || key == "updated_at" || key == "title" {
+                line.splitn(2, ':').nth(1).unwrap_or("").trim()
             } else {
-                value.trim().trim_matches('"')
+                value.trim()
+            };
+            // Strip outer quotes (single pair only) then trim_matches for unquoted values
+            let value = if value.starts_with('"') && value.ends_with('"') && value.len() >= 2 {
+                &value[1..value.len()-1]
+            } else {
+                value.trim_matches('"')
             };
             match key {
                 "id" => id = value.to_string(),
-                "title" => title = value.to_string(),
+                "title" => title = value.replace("\\\"", "\"").replace("\\\\", "\\"),
                 "mode" => mode = value.to_string(),
                 "date" => date = value.to_string(),
                 "date_format" => date_format = Some(value.to_string()),
@@ -313,8 +321,12 @@ fn parse_entry(content: &str) -> Result<DiaryEntry, String> {
 
     // Find content after frontmatter — skip opening "---"
     let rest = &content[3..];
-    let fm_end = rest.find("---").ok_or("Invalid frontmatter")? + 3;
-    let body = rest[fm_end..].trim();
+    let fm_end_offset = rest.find("\n---\n")
+        .or_else(|| rest.find("\n---").filter(|&i| i + 4 >= rest.len()))
+        .ok_or("Invalid frontmatter")?;
+    // Skip past "\n---\n"
+    let body_start = fm_end_offset + 4; // "\n---" = 4 chars
+    let body = if body_start < rest.len() { rest[body_start..].trim() } else { "" };
 
     let original = extract_section(body, "# Original");
     let mut translations = HashMap::new();
@@ -384,7 +396,7 @@ fn find_next_heading(text: &str) -> Option<usize> {
     None
 }
 
-fn serialize_entry(entry: &DiaryEntry) -> String {
+pub fn serialize_entry(entry: &DiaryEntry) -> String {
     let date_format_line = entry
         .meta
         .date_format
@@ -411,10 +423,13 @@ fn serialize_entry(entry: &DiaryEntry) -> String {
         entry.meta.languages.join(", ")
     );
 
+    // Quote title to protect against YAML special characters (#, :, ---)
+    let escaped_title = entry.meta.title.replace('\\', "\\\\").replace('"', "\\\"");
+
     let mut output = format!(
-        "---\nid: {}\ntitle: {}\ndate: {}\nmode: {}\nlanguages: {}\n{}{}{}---\n\n# Original\n\n{}\n",
+        "---\nid: {}\ntitle: \"{}\"\ndate: {}\nmode: {}\nlanguages: {}\n{}{}{}---\n\n# Original\n\n{}\n",
         entry.meta.id,
-        entry.meta.title,
+        escaped_title,
         entry.meta.date,
         entry.meta.mode,
         languages_str,
@@ -430,4 +445,184 @@ fn serialize_entry(entry: &DiaryEntry) -> String {
     }
 
     output
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_entry(title: &str, original: &str, languages: Vec<&str>, translations: Vec<(&str, &str)>) -> DiaryEntry {
+        DiaryEntry {
+            meta: EntryMeta {
+                id: "2026-02-24_143052".to_string(),
+                date: "2026-02-24".to_string(),
+                title: title.to_string(),
+                mode: "correction".to_string(),
+                languages: languages.into_iter().map(String::from).collect(),
+                date_format: None,
+                created_at: Some("2026-02-24T14:30:52".to_string()),
+                updated_at: Some("2026-02-24T14:35:00".to_string()),
+            },
+            original: original.to_string(),
+            translations: translations.into_iter().map(|(k, v)| (k.to_string(), v.to_string())).collect(),
+        }
+    }
+
+    // --- parse_frontmatter tests ---
+
+    #[test]
+    fn test_parse_frontmatter_normal() {
+        let content = "---\nid: 2026-02-24_143052\ntitle: \"My Day\"\ndate: 2026-02-24\nmode: correction\nlanguages: [ja]\ncreated_at: 2026-02-24T14:30:52\nupdated_at: 2026-02-24T14:35:00\n---\n\n# Original\n\nHello";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.id, "2026-02-24_143052");
+        assert_eq!(meta.title, "My Day");
+        assert_eq!(meta.date, "2026-02-24");
+        assert_eq!(meta.mode, "correction");
+        assert_eq!(meta.languages, vec!["ja"]);
+        assert_eq!(meta.created_at.unwrap(), "2026-02-24T14:30:52");
+        assert_eq!(meta.updated_at.unwrap(), "2026-02-24T14:35:00");
+    }
+
+    #[test]
+    fn test_parse_frontmatter_title_with_colon() {
+        let content = "---\nid: test_001\ntitle: \"10:30 morning routine\"\ndate: 2026-02-24\nmode: correction\nlanguages: [ja]\n---\n\nBody";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.title, "10:30 morning routine");
+    }
+
+    #[test]
+    fn test_parse_frontmatter_title_with_yaml_special_chars() {
+        let content = "---\nid: test_002\ntitle: \"Entry with # hash and --- dashes\"\ndate: 2026-02-24\nmode: correction\nlanguages: [ja]\n---\n\nBody";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.title, "Entry with # hash and --- dashes");
+    }
+
+    #[test]
+    fn test_parse_frontmatter_title_with_escaped_quotes() {
+        let content = "---\nid: test_003\ntitle: \"She said \\\"hello\\\"\"\ndate: 2026-02-24\nmode: correction\nlanguages: [ja]\n---\n\nBody";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.title, "She said \"hello\"");
+    }
+
+    #[test]
+    fn test_parse_frontmatter_multiple_languages() {
+        let content = "---\nid: test_004\ntitle: \"Test\"\ndate: 2026-02-24\nmode: translation\nlanguages: [ja, en, it]\n---\n\nBody";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.languages, vec!["ja", "en", "it"]);
+        assert_eq!(meta.mode, "translation");
+    }
+
+    #[test]
+    fn test_parse_frontmatter_no_frontmatter() {
+        let content = "Just a plain text file without frontmatter.";
+        assert!(parse_frontmatter(content).is_none());
+    }
+
+    #[test]
+    fn test_parse_frontmatter_empty_frontmatter() {
+        let content = "---\n---\n\nSome body text";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.id, "");
+        assert_eq!(meta.title, "");
+    }
+
+    #[test]
+    fn test_parse_frontmatter_old_singular_language() {
+        let content = "---\nid: old_001\ntitle: \"Old entry\"\ndate: 2026-01-01\nmode: correction\nlanguage: ja\n---\n\nBody";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.languages, vec!["ja"]);
+    }
+
+    #[test]
+    fn test_frontmatter_closing_delimiter_not_confused_with_value() {
+        // Title value contains "---" but the real closing delimiter is on its own line
+        let content = "---\nid: test_005\ntitle: \"My day --- a reflection\"\ndate: 2026-02-24\nmode: correction\nlanguages: [ja]\n---\n\n# Original\n\nBody";
+        let meta = parse_frontmatter(content).unwrap();
+        assert_eq!(meta.title, "My day --- a reflection");
+        assert_eq!(meta.id, "test_005");
+    }
+
+    // --- serialize_entry + parse_entry round-trip tests ---
+
+    #[test]
+    fn test_round_trip_basic() {
+        let entry = make_entry("My Diary", "Hello world", vec!["ja"], vec![("ja", "こんにちは世界")]);
+        let serialized = serialize_entry(&entry);
+        let parsed = parse_entry(&serialized).unwrap();
+        assert_eq!(parsed.meta.id, entry.meta.id);
+        assert_eq!(parsed.meta.title, entry.meta.title);
+        assert_eq!(parsed.meta.date, entry.meta.date);
+        assert_eq!(parsed.meta.mode, entry.meta.mode);
+        assert_eq!(parsed.meta.languages, entry.meta.languages);
+        assert_eq!(parsed.original, entry.original);
+        assert_eq!(parsed.translations.get("ja").unwrap(), "こんにちは世界");
+    }
+
+    #[test]
+    fn test_round_trip_special_title() {
+        let entry = make_entry("10:30 diary # thoughts --- end", "Content here", vec!["ja"], vec![("ja", "修正後")]);
+        let serialized = serialize_entry(&entry);
+        let parsed = parse_entry(&serialized).unwrap();
+        assert_eq!(parsed.meta.title, "10:30 diary # thoughts --- end");
+    }
+
+    #[test]
+    fn test_round_trip_title_with_quotes() {
+        let entry = make_entry("She said \"hello\"", "Content", vec!["en"], vec![("en", "Corrected")]);
+        let serialized = serialize_entry(&entry);
+        let parsed = parse_entry(&serialized).unwrap();
+        assert_eq!(parsed.meta.title, "She said \"hello\"");
+    }
+
+    #[test]
+    fn test_round_trip_multi_language() {
+        let entry = make_entry(
+            "Multilingual",
+            "Original text",
+            vec!["ja", "en", "it"],
+            vec![("ja", "日本語テキスト"), ("en", "English text"), ("it", "Testo italiano")],
+        );
+        let serialized = serialize_entry(&entry);
+        let parsed = parse_entry(&serialized).unwrap();
+        assert_eq!(parsed.meta.languages, vec!["ja", "en", "it"]);
+        assert_eq!(parsed.translations.len(), 3);
+        assert_eq!(parsed.translations.get("ja").unwrap(), "日本語テキスト");
+        assert_eq!(parsed.translations.get("en").unwrap(), "English text");
+        assert_eq!(parsed.translations.get("it").unwrap(), "Testo italiano");
+    }
+
+    // --- extract_section tests ---
+
+    #[test]
+    fn test_extract_section_normal() {
+        let body = "# Original\n\nHello world\n\n# ja\n\nこんにちは";
+        assert_eq!(extract_section(body, "# Original"), "Hello world");
+        assert_eq!(extract_section(body, "# ja"), "こんにちは");
+    }
+
+    #[test]
+    fn test_extract_section_not_found() {
+        let body = "# Original\n\nHello world";
+        assert_eq!(extract_section(body, "# ja"), "");
+    }
+
+    #[test]
+    fn test_extract_section_body_contains_hash_in_text() {
+        // Text within a section that has "# " at start of line should be treated as next section
+        let body = "# Original\n\nLine 1\nLine with # in middle\n\n# ja\n\nText";
+        let original = extract_section(body, "# Original");
+        assert!(original.contains("Line with # in middle"));
+    }
+
+    // --- generate_entry_id tests ---
+
+    #[test]
+    fn test_generate_entry_id_format() {
+        let id = generate_entry_id("2026-02-24");
+        assert!(id.starts_with("2026-02-24_"));
+        assert_eq!(id.len(), 17); // "2026-02-24_HHMMSS"
+        // Verify the time part is all digits
+        let time_part = &id[11..];
+        assert!(time_part.chars().all(|c| c.is_ascii_digit()));
+    }
 }

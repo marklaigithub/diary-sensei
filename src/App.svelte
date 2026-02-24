@@ -1,5 +1,6 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
+  import { confirm } from '@tauri-apps/plugin-dialog';
   import { onMount } from 'svelte';
   import Calendar from './lib/Calendar.svelte';
   import EntryList from './lib/EntryList.svelte';
@@ -13,9 +14,10 @@
     config, showSettings, appMode, currentEntry,
     selectedYear, selectedMonth, entries, currentDate,
     editorContent, entryTitle, translations, isProcessing,
-    error, isLoading, currentEntryId, selectedTargetLanguages
+    error, isLoading, currentEntryId, selectedTargetLanguages,
+    isDirty, explanation
   } from './lib/store';
-  import type { AppConfig, EntryListItem, DiaryEntry } from './lib/types';
+  import type { AppConfig, EntryListItem, DiaryEntry, CorrectionResult } from './lib/types';
 
   let configVal: AppConfig;
   let showSettingsVal: boolean;
@@ -30,6 +32,7 @@
   let errorVal: string;
   let selectedLangsVal: string[];
   let dateVal: string = '';
+  let dirtyVal: boolean = false;
   let editorRef: Editor;
 
   config.subscribe(v => configVal = v);
@@ -45,13 +48,30 @@
   error.subscribe(v => errorVal = v);
   selectedTargetLanguages.subscribe(v => selectedLangsVal = v);
   currentDate.subscribe(v => dateVal = v);
+  isDirty.subscribe(v => dirtyVal = v);
+
+  // Track editor/title changes to set dirty flag
+  let skipDirtyTracking = false;
+  editorContent.subscribe(() => { if (!skipDirtyTracking) isDirty.set(true); });
+  entryTitle.subscribe(() => { if (!skipDirtyTracking) isDirty.set(true); });
+
+  async function checkDirty(): Promise<boolean> {
+    if (!dirtyVal) return true;
+    return await confirm('You have unsaved changes. Discard and continue?', {
+      title: 'Unsaved Changes',
+      kind: 'warning',
+    });
+  }
 
   onMount(async () => {
     try {
       const cfg: AppConfig = await invoke('load_config');
       config.set(cfg);
       document.documentElement.dataset.theme = cfg.theme;
+      skipDirtyTracking = true;
       await loadEntries();
+      isDirty.set(false);
+      skipDirtyTracking = false;
     } catch (e) {
       console.error('Failed to load config:', e);
     }
@@ -70,10 +90,13 @@
   }
 
   async function handleEntrySelect(event: CustomEvent<string>) {
+    if (!await checkDirty()) return;
     const id = event.detail;
     currentEntryId.set(id);
     try {
       const entry: DiaryEntry = await invoke('read_entry', { id });
+      skipDirtyTracking = true;
+      explanation.set(null);
       currentEntry.set(entry);
       currentDate.set(entry.meta.date);
       editorContent.set(entry.original);
@@ -81,28 +104,45 @@
       translations.set(entry.translations);
       appMode.set(entry.meta.mode as any);
       selectedTargetLanguages.set(entry.meta.languages);
+      isDirty.set(false);
+      skipDirtyTracking = false;
     } catch (e) {
+      skipDirtyTracking = false;
       error.set('Failed to load entry');
     }
   }
 
   async function handleDateSelect(event: CustomEvent<string>) {
+    if (!await checkDirty()) return;
     const date = event.detail;
+    skipDirtyTracking = true;
+    explanation.set(null);
     currentDate.set(date);
     currentEntryId.set(null);
     currentEntry.set(null);
     editorContent.set('');
     entryTitle.set('');
     translations.set({});
+    isDirty.set(false);
+    skipDirtyTracking = false;
   }
 
   async function handleDateInputChange(newDate: string) {
+    if (!await checkDirty()) return;
+    skipDirtyTracking = true;
+    explanation.set(null);
     currentDate.set(newDate);
+    currentEntryId.set(null);
+    currentEntry.set(null);
+    editorContent.set('');
+    entryTitle.set('');
+    translations.set({});
+    isDirty.set(false);
+    skipDirtyTracking = false;
     const parts = newDate.split('-');
     if (parts.length === 3) {
       const newYear = parseInt(parts[0]);
       const newMonth = parseInt(parts[1]);
-      // Always sync calendar store and reload entries
       selectedYear.set(newYear);
       selectedMonth.set(newMonth);
       await loadEntries();
@@ -122,11 +162,12 @@
 
     try {
       if (modeVal === 'correction') {
-        const result: string = await invoke('correct_text', {
+        const result: CorrectionResult = await invoke('correct_text', {
           text: editorVal,
           language: selectedLangsVal[0] || configVal.default_language,
         });
-        translations.set({ [selectedLangsVal[0] || configVal.default_language]: result });
+        translations.set({ [selectedLangsVal[0] || configVal.default_language]: result.corrected });
+        explanation.set(result.explanation || null);
       } else {
         const results: Record<string, string> = await invoke('translate_text', {
           text: editorVal,
@@ -142,6 +183,12 @@
   }
 
   async function handleSave() {
+    // Validate date format before saving
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+      error.set('Invalid date. Please select a valid date (YYYY-MM-DD).');
+      return;
+    }
+
     let entryIdVal: string | null = null;
     currentEntryId.subscribe(v => entryIdVal = v)();
 
@@ -158,6 +205,7 @@
       });
       currentEntryId.set(savedId);
       await loadEntries();
+      isDirty.set(false);
       error.set('');
     } catch (e: any) {
       error.set('Save failed: ' + e.toString());
@@ -171,12 +219,36 @@
     return `${datePart.replace(/-/g, '/')} ${timePart.slice(0, 5)}`;
   }
 
-  function handleNewEntry() {
+  async function handleNewEntry() {
+    if (!await checkDirty()) return;
+    skipDirtyTracking = true;
+    explanation.set(null);
     currentEntryId.set(null);
     currentEntry.set(null);
     editorContent.set('');
     entryTitle.set('');
     translations.set({});
+    isDirty.set(false);
+    skipDirtyTracking = false;
+  }
+
+  async function handleEntryDelete(event: CustomEvent<string>) {
+    const deletedId = event.detail;
+    await loadEntries();
+    // If the deleted entry was currently being edited, clear the editor
+    let entryIdVal: string | null = null;
+    currentEntryId.subscribe(v => entryIdVal = v)();
+    if (entryIdVal === deletedId) {
+      skipDirtyTracking = true;
+      currentEntryId.set(null);
+      currentEntry.set(null);
+      editorContent.set('');
+      entryTitle.set('');
+      translations.set({});
+      explanation.set(null);
+      isDirty.set(false);
+      skipDirtyTracking = false;
+    }
   }
 
   function handleApplyCorrection() {
@@ -237,7 +309,7 @@
       on:monthChange={handleMonthChange}
     />
 
-    <EntryList on:select={handleEntrySelect} />
+    <EntryList on:select={handleEntrySelect} on:delete={handleEntryDelete} />
   </aside>
 
   <!-- Main content -->
@@ -338,10 +410,10 @@
       <div class="print-section-label">Original</div>
       <div class="print-text">{editorVal}</div>
     </div>
-    {#if translationsVal[selectedLangsVal[0]]}
+    {#if translationsVal[selectedLangsVal[0] || configVal?.default_language]}
       <div class="print-section">
         <div class="print-section-label">Corrected</div>
-        <div class="print-text">{translationsVal[selectedLangsVal[0]]}</div>
+        <div class="print-text">{translationsVal[selectedLangsVal[0] || configVal?.default_language]}</div>
       </div>
     {/if}
   {:else}

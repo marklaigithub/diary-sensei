@@ -84,8 +84,14 @@ pub async fn create_entry_id(date: String) -> String {
     storage::generate_entry_id(&date)
 }
 
+#[derive(serde::Serialize)]
+pub struct CorrectionResult {
+    pub corrected: String,
+    pub explanation: Option<String>,
+}
+
 #[command]
-pub async fn correct_text(text: String, language: String) -> Result<String, String> {
+pub async fn correct_text(text: String, language: String) -> Result<CorrectionResult, String> {
     let config = config::load_app_config();
     let lang_name = config
         .languages
@@ -95,17 +101,34 @@ pub async fn correct_text(text: String, language: String) -> Result<String, Stri
         .unwrap_or(language);
     let system = claude::correction_prompt(&lang_name);
 
-    match config.ai_provider.as_str() {
+    let raw = match config.ai_provider.as_str() {
         "claude" => {
             if config.api_key.is_empty() {
                 return Err("API key not configured. Please set it in Settings.".to_string());
             }
-            claude::call_claude(&config.api_key, &system, &text).await
+            claude::call_claude(&config.api_key, &system, &text).await?
         }
         _ => {
-            claude::call_ollama(&config.ollama_url, &config.ollama_model, &system, &text).await
+            claude::call_ollama(&config.ollama_url, &config.ollama_model, &system, &text).await?
         }
-    }
+    };
+
+    // Parse [CORRECTED] / [EXPLANATION] sections
+    let (corrected, explanation) = if let Some(corr_start) = raw.find("[CORRECTED]") {
+        let after_marker = &raw[corr_start + "[CORRECTED]".len()..];
+        if let Some(expl_start) = after_marker.find("[EXPLANATION]") {
+            let corrected = after_marker[..expl_start].trim().to_string();
+            let explanation = after_marker[expl_start + "[EXPLANATION]".len()..].trim().to_string();
+            (corrected, if explanation.is_empty() { None } else { Some(explanation) })
+        } else {
+            (after_marker.trim().to_string(), None)
+        }
+    } else {
+        // Fallback: treat entire response as corrected text (backward compat)
+        (raw.trim().to_string(), None)
+    };
+
+    Ok(CorrectionResult { corrected, explanation })
 }
 
 #[command]
@@ -114,9 +137,13 @@ pub async fn translate_text(
     target_languages: Vec<String>,
 ) -> Result<HashMap<String, String>, String> {
     let config = config::load_app_config();
-    let mut results = HashMap::new();
 
-    for lang_code in &target_languages {
+    if config.ai_provider == "claude" && config.api_key.is_empty() {
+        return Err("API key not configured. Please set it in Settings.".to_string());
+    }
+
+    // Spawn all translations in parallel
+    let futures: Vec<_> = target_languages.iter().map(|lang_code| {
         let lang_name = config
             .languages
             .iter()
@@ -124,19 +151,29 @@ pub async fn translate_text(
             .map(|l| l.name.clone())
             .unwrap_or_else(|| lang_code.clone());
         let system = claude::translation_prompt(&lang_name);
+        let text = text.clone();
+        let api_key = config.api_key.clone();
+        let provider = config.ai_provider.clone();
+        let ollama_url = config.ollama_url.clone();
+        let ollama_model = config.ollama_model.clone();
+        let lang_code = lang_code.clone();
 
-        let result = match config.ai_provider.as_str() {
-            "claude" => {
-                if config.api_key.is_empty() {
-                    return Err("API key not configured. Please set it in Settings.".to_string());
-                }
-                claude::call_claude(&config.api_key, &system, &text).await?
-            }
-            _ => {
-                claude::call_ollama(&config.ollama_url, &config.ollama_model, &system, &text).await?
-            }
-        };
-        results.insert(lang_code.clone(), result);
+        async move {
+            let result = match provider.as_str() {
+                "claude" => claude::call_claude(&api_key, &system, &text).await,
+                _ => claude::call_ollama(&ollama_url, &ollama_model, &system, &text).await,
+            };
+            (lang_code, result)
+        }
+    }).collect();
+
+    let results_vec = futures::future::join_all(futures).await;
+    let mut results = HashMap::new();
+    for (lang_code, result) in results_vec {
+        match result {
+            Ok(text) => { results.insert(lang_code, text); }
+            Err(e) => { results.insert(lang_code, format!("[Translation failed: {}]", e)); }
+        }
     }
 
     Ok(results)

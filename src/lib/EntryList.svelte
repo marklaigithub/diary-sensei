@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
+  import { confirm } from '@tauri-apps/plugin-dialog';
   import { entries, currentEntryId, searchQuery, searchResults } from './store';
   import type { EntryListItem } from './types';
 
@@ -60,7 +61,24 @@
     }, 300);
   }
 
+  async function handleDelete(e: Event, entry: EntryListItem) {
+    e.stopPropagation();
+    const confirmed = await confirm(`Delete "${entry.title}"?`, {
+      title: 'Delete Entry',
+      kind: 'warning',
+    });
+    if (confirmed) {
+      try {
+        await invoke('delete_entry', { id: entry.id });
+        dispatch('delete', entry.id);
+      } catch (err) {
+        console.error('Delete failed:', err);
+      }
+    }
+  }
+
   function clearSearch() {
+    if (searchTimeout) clearTimeout(searchTimeout);
     searchQuery.set('');
     searchResults.set(null);
   }
@@ -94,17 +112,26 @@
     </div>
   {:else}
     {#each displayList as entry}
-      <button
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
         class="entry-item"
         class:active={entry.id === currentIdVal}
         onclick={() => selectEntry(entry.id)}
+        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectEntry(entry.id); } }}
+        role="button"
+        tabindex="0"
       >
         <div class="entry-date">
           <span class="mode-icon">{modeIcon(entry.mode)}</span>
           <span>{formatShortDate(entry.date)} {formatTime(entry.id)}</span>
+          <button
+            class="delete-btn"
+            onclick={(e) => handleDelete(e, entry)}
+            title="Delete entry"
+          >✕</button>
         </div>
         <div class="entry-title">{entry.title}</div>
-      </button>
+      </div>
     {/each}
   {/if}
 </div>
@@ -192,6 +219,7 @@
     border-radius: var(--radius);
     margin-bottom: 2px;
     transition: all 0.15s;
+    cursor: pointer;
   }
 
   .entry-item:hover {
@@ -209,6 +237,26 @@
     font-size: 12px;
     color: var(--text-secondary);
     margin-bottom: 2px;
+  }
+
+  .delete-btn {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 1px 4px;
+    border-radius: 3px;
+    line-height: 1;
+    opacity: 0;
+    transition: all 0.15s;
+  }
+
+  .entry-item:hover .delete-btn {
+    opacity: 1;
+  }
+
+  .delete-btn:hover {
+    color: var(--diff-removed-text);
+    background: var(--diff-removed-bg);
   }
 
   .mode-icon {
