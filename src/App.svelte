@@ -98,16 +98,14 @@
 
   async function handleDateInputChange(newDate: string) {
     currentDate.set(newDate);
-    // If month/year changed, reload entries
     const parts = newDate.split('-');
     if (parts.length === 3) {
       const newYear = parseInt(parts[0]);
       const newMonth = parseInt(parts[1]);
-      if (newYear !== yearVal || newMonth !== monthVal) {
-        selectedYear.set(newYear);
-        selectedMonth.set(newMonth);
-        await loadEntries();
-      }
+      // Always sync calendar store and reload entries
+      selectedYear.set(newYear);
+      selectedMonth.set(newMonth);
+      await loadEntries();
     }
   }
 
@@ -193,8 +191,10 @@
   async function handleQuickTranslate(event: CustomEvent<{text: string, targetLanguage: string}>) {
     const { text, targetLanguage } = event.detail;
     try {
+      // Wrap the text so AI treats it as content to translate, not an instruction
+      const wrappedText = `[Text to translate]\n\n${text}`;
       const results: Record<string, string> = await invoke('translate_text', {
-        text,
+        text: wrappedText,
         targetLanguages: [targetLanguage],
       });
       const translated = results[targetLanguage] || '';
@@ -298,6 +298,9 @@
             </button>
             <button class="btn btn-secondary" onclick={handleSave}>
               Save
+            </button>
+            <button class="btn btn-outline" onclick={handlePrint} title="Export PDF">
+              Export PDF
             </button>
           </div>
         </div>
