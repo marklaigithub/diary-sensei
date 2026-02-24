@@ -1,5 +1,6 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
+  import { t, locale } from 'svelte-i18n';
   import { config, showSettings } from './store';
   import type { AppConfig, LanguageConfig, AiProvider } from './types';
 
@@ -20,6 +21,15 @@
   let editingLangIdx = $state<number | null>(null);
   let addingLang = $state(false);
   let editForm = $state({ code: '', name: '', date_format: '' });
+  let uiLocale = $state(localStorage.getItem('diary-sensei-locale') || 'en');
+
+  const uiLanguageOptions = [
+    { code: 'en', label: 'English' },
+    { code: 'zh-TW', label: '繁體中文' },
+    { code: 'ja', label: '日本語' },
+    { code: 'ko', label: '한국어' },
+    { code: 'it', label: 'Italiano' },
+  ];
 
   $effect(() => {
     if (configVal) {
@@ -33,6 +43,13 @@
       languages = (configVal.languages || []).map(l => ({ ...l }));
     }
   });
+
+  function handleLocaleChange(e: Event) {
+    const newLocale = (e.target as HTMLSelectElement).value;
+    uiLocale = newLocale;
+    locale.set(newLocale);
+    localStorage.setItem('diary-sensei-locale', newLocale);
+  }
 
   function startEditLang(idx: number) {
     editingLangIdx = idx;
@@ -88,7 +105,7 @@
       };
       await invoke('save_config', { config: updated });
       config.set(updated);
-      saveMsg = 'Saved!';
+      saveMsg = $t('settings.saved');
       setTimeout(() => saveMsg = '', 2000);
     } catch (e: any) {
       saveMsg = 'Error: ' + e.toString();
@@ -104,7 +121,7 @@
 
 <div class="settings">
   <div class="settings-header">
-    <h2>Settings</h2>
+    <h2>{$t('settings.title')}</h2>
     <button class="close-btn" onclick={close}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
@@ -112,35 +129,44 @@
 
   <div class="settings-body">
     <div class="setting-group">
-      <label class="setting-label">AI Provider</label>
+      <label class="setting-label">{$t('settings.uiLanguage')}</label>
+      <select class="setting-input" value={uiLocale} onchange={handleLocaleChange}>
+        {#each uiLanguageOptions as opt}
+          <option value={opt.code}>{opt.label}</option>
+        {/each}
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">{$t('settings.aiProvider')}</label>
       <select class="setting-input" bind:value={aiProvider}>
-        <option value="ollama">Local (Ollama) — free, private</option>
-        <option value="claude">Claude API — best quality, paid</option>
+        <option value="ollama">{$t('settings.ollamaLocal')}</option>
+        <option value="claude">{$t('settings.claudeApi')}</option>
       </select>
       <p class="setting-hint">
         {#if aiProvider === 'ollama'}
-          Runs locally on your machine. No data leaves your computer.
+          {$t('settings.ollamaHint')}
         {:else}
-          Requires API key. Data sent to Anthropic servers.
+          {$t('settings.claudeHint')}
         {/if}
       </p>
     </div>
 
     {#if aiProvider === 'ollama'}
       <div class="setting-group">
-        <label class="setting-label">Ollama Model</label>
+        <label class="setting-label">{$t('settings.ollamaModel')}</label>
         <select class="setting-input" bind:value={ollamaModel}>
-          <option value="gemma2:9b">Gemma 2 9B (Google, recommended)</option>
-          <option value="gemma2:2b">Gemma 2 2B (Google, faster)</option>
-          <option value="llama3.1:8b">Llama 3.1 8B (Meta)</option>
-          <option value="mistral:7b">Mistral 7B (Mistral AI)</option>
-          <option value="phi3:medium">Phi-3 Medium (Microsoft)</option>
+          <option value="gemma2:9b">{$t('settings.ollamaGemma2_9b')}</option>
+          <option value="gemma2:2b">{$t('settings.ollamaGemma2_2b')}</option>
+          <option value="llama3.1:8b">{$t('settings.ollamaLlama3')}</option>
+          <option value="mistral:7b">{$t('settings.ollamaMistral')}</option>
+          <option value="phi3:medium">{$t('settings.ollamaPhi3')}</option>
         </select>
-        <p class="setting-hint">Install with: ollama pull {ollamaModel}</p>
+        <p class="setting-hint">{$t('settings.ollamaInstallHint', { values: { model: ollamaModel } })}</p>
       </div>
 
       <div class="setting-group">
-        <label class="setting-label">Ollama URL</label>
+        <label class="setting-label">{$t('settings.ollamaUrl')}</label>
         <input
           type="text"
           class="setting-input"
@@ -150,19 +176,19 @@
       </div>
     {:else}
       <div class="setting-group">
-        <label class="setting-label">Claude API Key</label>
+        <label class="setting-label">{$t('settings.claudeApiKey')}</label>
         <input
           type="password"
           class="setting-input"
           bind:value={apiKey}
           placeholder="sk-ant-..."
         />
-        <p class="setting-hint">Get your API key from console.anthropic.com</p>
+        <p class="setting-hint">{$t('settings.claudeApiKeyHint')}</p>
       </div>
     {/if}
 
     <div class="setting-group">
-      <label class="setting-label">Default Language</label>
+      <label class="setting-label">{$t('settings.defaultLanguage')}</label>
       <select class="setting-input" bind:value={defaultLang}>
         {#each languages as lang}
           <option value={lang.code}>{lang.name} ({lang.code})</option>
@@ -171,7 +197,7 @@
     </div>
 
     <div class="setting-group">
-      <label class="setting-label">Entries Directory</label>
+      <label class="setting-label">{$t('settings.entriesDir')}</label>
       <input
         type="text"
         class="setting-input"
@@ -181,28 +207,28 @@
     </div>
 
     <div class="setting-group">
-      <label class="setting-label">Global Date Format (optional)</label>
+      <label class="setting-label">{$t('settings.globalDateFormat')}</label>
       <input
         type="text"
         class="setting-input"
         bind:value={globalDateFormat}
-        placeholder="Use language default"
+        placeholder={$t('settings.globalDateFormatPlaceholder')}
       />
-      <p class="setting-hint">e.g. YYYY年MM月DD日（ddd）, MMM DD, YYYY (ddd)</p>
+      <p class="setting-hint">{$t('settings.globalDateFormatHint')}</p>
     </div>
 
     <div class="setting-group">
-      <label class="setting-label">Languages</label>
+      <label class="setting-label">{$t('settings.languages')}</label>
       <div class="languages-list">
         {#each languages as lang, idx}
           {#if editingLangIdx === idx}
             <div class="lang-edit-form">
-              <input type="text" class="lang-input" bind:value={editForm.code} placeholder="Code (e.g. ko)" />
-              <input type="text" class="lang-input lang-input-wide" bind:value={editForm.name} placeholder="Name (e.g. Korean)" />
-              <input type="text" class="lang-input lang-input-wide" bind:value={editForm.date_format} placeholder="Date format" />
+              <input type="text" class="lang-input" bind:value={editForm.code} placeholder={$t('settings.langCodePlaceholder')} />
+              <input type="text" class="lang-input lang-input-wide" bind:value={editForm.name} placeholder={$t('settings.langNamePlaceholder')} />
+              <input type="text" class="lang-input lang-input-wide" bind:value={editForm.date_format} placeholder={$t('settings.langDateFormatPlaceholder')} />
               <div class="lang-edit-actions">
-                <button class="lang-action-btn save" onclick={saveEditLang} title="Save">✓</button>
-                <button class="lang-action-btn cancel" onclick={cancelEditLang} title="Cancel">✕</button>
+                <button class="lang-action-btn save" onclick={saveEditLang} title={$t('settings.save')}>✓</button>
+                <button class="lang-action-btn cancel" onclick={cancelEditLang} title={$t('settings.cancel')}>✕</button>
               </div>
             </div>
           {:else}
@@ -211,24 +237,24 @@
               <span class="lang-name">{lang.name}</span>
               <span class="lang-format">{lang.date_format}</span>
               <div class="lang-item-actions">
-                <button class="lang-action-btn" onclick={() => startEditLang(idx)} title="Edit">✎</button>
-                <button class="lang-action-btn delete" onclick={() => deleteLang(idx)} title="Delete">✕</button>
+                <button class="lang-action-btn" onclick={() => startEditLang(idx)} title={$t('settings.editLanguage')}>✎</button>
+                <button class="lang-action-btn delete" onclick={() => deleteLang(idx)} title={$t('settings.cancel')}>✕</button>
               </div>
             </div>
           {/if}
         {/each}
         {#if addingLang}
           <div class="lang-edit-form">
-            <input type="text" class="lang-input" bind:value={editForm.code} placeholder="Code (e.g. ko)" />
-            <input type="text" class="lang-input lang-input-wide" bind:value={editForm.name} placeholder="Name (e.g. Korean)" />
-            <input type="text" class="lang-input lang-input-wide" bind:value={editForm.date_format} placeholder="Date format" />
+            <input type="text" class="lang-input" bind:value={editForm.code} placeholder={$t('settings.langCodePlaceholder')} />
+            <input type="text" class="lang-input lang-input-wide" bind:value={editForm.name} placeholder={$t('settings.langNamePlaceholder')} />
+            <input type="text" class="lang-input lang-input-wide" bind:value={editForm.date_format} placeholder={$t('settings.langDateFormatPlaceholder')} />
             <div class="lang-edit-actions">
-              <button class="lang-action-btn save" onclick={saveEditLang} title="Save">✓</button>
-              <button class="lang-action-btn cancel" onclick={cancelEditLang} title="Cancel">✕</button>
+              <button class="lang-action-btn save" onclick={saveEditLang} title={$t('settings.save')}>✓</button>
+              <button class="lang-action-btn cancel" onclick={cancelEditLang} title={$t('settings.cancel')}>✕</button>
             </div>
           </div>
         {:else}
-          <button class="add-lang-btn" onclick={startAddLang}>+ Add Language</button>
+          <button class="add-lang-btn" onclick={startAddLang}>{$t('settings.addLanguage')}</button>
         {/if}
       </div>
     </div>
@@ -238,9 +264,9 @@
     {#if saveMsg}
       <span class="save-msg" class:error={saveMsg.startsWith('Error')}>{saveMsg}</span>
     {/if}
-    <button class="btn btn-secondary" onclick={close}>Cancel</button>
+    <button class="btn btn-secondary" onclick={close}>{$t('settings.cancel')}</button>
     <button class="btn btn-primary" onclick={handleSave} disabled={saving}>
-      {saving ? 'Saving...' : 'Save'}
+      {saving ? $t('settings.saving') : $t('settings.save')}
     </button>
   </div>
 </div>

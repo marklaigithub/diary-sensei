@@ -35,3 +35,5 @@ export const isDirty = writable<boolean>(false);
 export const explanation = writable<string | null>(null);
 export const searchQuery = writable<string>('');
 export const searchResults = writable<EntryListItem[] | null>(null);
+export const closedEntryIds = writable<Set<string>>(new Set());
+export const correctionOriginal = writable<string>('');

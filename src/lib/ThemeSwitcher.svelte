@@ -1,12 +1,13 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
+  import { t } from 'svelte-i18n';
   import { config } from './store';
   import type { AppConfig } from './types';
 
-  const themes = [
-    { id: 'warm-light', label: 'Warm', icon: '🌅' },
-    { id: 'cool-light', label: 'Cool', icon: '🌊' },
-    { id: 'dark', label: 'Dark', icon: '🌙' },
+  const themeIds = [
+    { id: 'warm-light', icon: '🌅', key: 'warm' },
+    { id: 'cool-light', icon: '🌊', key: 'cool' },
+    { id: 'dark', icon: '🌙', key: 'dark' },
   ];
 
   let showDropdown = $state(false);
@@ -23,12 +24,12 @@
   }
 
   function getCurrentIcon(): string {
-    return themes.find(t => t.id === configVal?.theme)?.icon || '🎨';
+    return themeIds.find(t => t.id === configVal?.theme)?.icon || '🎨';
   }
 </script>
 
 <div class="theme-switcher">
-  <button class="icon-btn" onclick={() => showDropdown = !showDropdown} title="Theme">
+  <button class="icon-btn" onclick={() => showDropdown = !showDropdown} title={$t('theme.label')}>
     {getCurrentIcon()}
   </button>
 
@@ -36,14 +37,14 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="dropdown-overlay" onclick={() => showDropdown = false} onkeydown={() => {}}></div>
     <div class="dropdown">
-      {#each themes as theme}
+      {#each themeIds as theme}
         <button
           class="dropdown-item"
           class:active={configVal?.theme === theme.id}
           onclick={() => selectTheme(theme.id)}
         >
           <span>{theme.icon}</span>
-          <span>{theme.label}</span>
+          <span>{$t('theme.' + theme.key)}</span>
         </button>
       {/each}
     </div>

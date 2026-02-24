@@ -3,35 +3,38 @@ use serde::{Deserialize, Serialize};
 
 // --- Shared prompt builders ---
 
-pub fn correction_prompt(language: &str) -> String {
+pub fn correction_prompt(language: &str, explanation_language: &str) -> String {
     format!(
-        "You are a {} language teacher correcting a student's diary.\n\n\
-        RULES:\n\
-        1. The diary contains text in MULTIPLE languages.\n\
-        2. ONLY correct text written in {} — fix grammar, unnatural expressions, and word choice.\n\
-        3. Any text in other languages (English, Chinese, Korean, etc.) MUST be kept EXACTLY as-is, character for character, in the same position.\n\
-        4. Do NOT remove, translate, or modify text that is not in {}.\n\
-        5. Keep all line breaks, emoji, and image references (![...](path)) unchanged.\n\n\
-        FORMAT your response with these two sections:\n\
+        "You are a {0} language teacher. The student wrote a diary in {0}.\n\
+        CORRECT the {0} text. Your corrected text MUST be in {0}. Do NOT translate to another language.\n\n\
+        Rules:\n\
+        - Fix grammar, unnatural expressions, and word choice.\n\
+        - Keep the student's writing style and tone.\n\
+        - Keep line breaks, emoji, and image references unchanged.\n\
+        - If already perfect, return it unchanged.\n\n\
+        Format your response EXACTLY like this:\n\
         [CORRECTED]\n\
-        (The complete diary text with only the {} portions corrected)\n\
+        (corrected {0} text here — MUST be in {0})\n\
         [EXPLANATION]\n\
-        (Numbered list of changes with brief reasons. For each change:\n\
-        \"original\" → \"corrected\" — reason\n\
-        If the text is already perfect, write \"No corrections needed.\")",
-        language, language, language, language
+        (numbered list in {1}: \"original\" → \"corrected\" — reason.\n\
+        If no corrections needed, write: No corrections needed.)\n\n\
+        IMPORTANT: The corrected text MUST be in {0}, not any other language.",
+        language, explanation_language
     )
 }
 
 pub fn translation_prompt(target_language: &str) -> String {
     format!(
-        "You are a professional translator. \
-        The user's diary entry may contain text in multiple languages (e.g., Chinese, Japanese, English, etc.). \
-        Translate ALL content into {}, regardless of the original language. \
-        Write naturally, as if a native {} speaker wrote the diary. \
-        Keep the personal diary tone. Preserve all emoji and image references (![...](path)). \
-        Return ONLY the translation, nothing else.",
-        target_language, target_language
+        "Translate the following diary entry into {0}.\n\n\
+        Rules:\n\
+        - Translate ALL text into {0}.\n\
+        - If text is already in {0}, keep it as-is.\n\
+        - Remove section headers (like \"English Ver.\", \"中文字版本\").\n\
+        - Preserve emoji and image references (![...](path)).\n\
+        - Return ONLY the translated text.\n\n\
+        IMPORTANT: Do NOT add any new sentences. Do NOT invent content. \
+        Output ONLY the translation, nothing else.",
+        target_language
     )
 }
 

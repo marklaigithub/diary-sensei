@@ -1,0 +1,120 @@
+{
+  "app": {
+    "title": "日記先生",
+    "newEntry": "+ 新規",
+    "save": "保存",
+    "saving": "保存中...",
+    "exportPdf": "PDF出力",
+    "settings": "設定",
+    "processing": "処理中...",
+    "submitCorrection": "添削する",
+    "submitTranslation": "翻訳する",
+    "created": "作成：",
+    "edited": "編集：",
+    "titlePlaceholder": "タイトル...",
+    "correctionApplied": "添削結果をエディタに適用しました。",
+    "undo": "元に戻す（{countdown}）",
+    "newEntryTitle": "今日の新規日記",
+    "deleteEntryTitle": "日記を削除"
+  },
+  "calendar": {
+    "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+    "weekdays": ["月", "火", "水", "木", "金", "土", "日"],
+    "monthFormat": "{year}年{month}",
+    "more": "+{count}件"
+  },
+  "entryList": {
+    "searchPlaceholder": "日記を検索...",
+    "clearSearch": "検索をクリア",
+    "results": "検索結果",
+    "entries": "日記",
+    "noMatchingEntries": "一致する日記がありません",
+    "noEntriesThisMonth": "今月の日記はありません",
+    "close": "閉じる"
+  },
+  "editor": {
+    "placeholderCorrection": "目標言語で日記を書いてください...",
+    "placeholderTranslation": "母国語で日記を書くと、AIが翻訳します...",
+    "contextMenuHeader": "翻訳先...",
+    "translating": "翻訳中...",
+    "copy": "コピー"
+  },
+  "correction": {
+    "title": "添削結果",
+    "perfect": "完璧！",
+    "reviewing": "AIが添削中...",
+    "correctedVersion": "添削後",
+    "whyChanges": "変更の理由",
+    "acceptCorrection": "添削を適用",
+    "placeholder": "文章を送信すると、AIの添削結果がここに表示されます。"
+  },
+  "translation": {
+    "title": "翻訳結果",
+    "language": "言語",
+    "languages": "言語",
+    "translating": "{count}{unit}を翻訳中...",
+    "original": "原文",
+    "placeholder": "目標言語を選択して送信すると、翻訳結果がここに表示されます。",
+    "copy": "コピー"
+  },
+  "modeSelector": {
+    "writing": "ライティング",
+    "translation": "翻訳"
+  },
+  "settings": {
+    "title": "設定",
+    "uiLanguage": "表示言語",
+    "aiProvider": "AIプロバイダー",
+    "ollamaLocal": "ローカル（Ollama）— 無料・プライベート",
+    "claudeApi": "Claude API — 最高品質・有料",
+    "ollamaHint": "ローカルで実行。データは外部に送信されません。",
+    "claudeHint": "APIキーが必要。データはAnthropicのサーバーに送信されます。",
+    "ollamaModel": "Ollamaモデル",
+    "ollamaUrl": "Ollama URL",
+    "claudeApiKey": "Claude APIキー",
+    "claudeApiKeyHint": "console.anthropic.comでAPIキーを取得してください",
+    "defaultLanguage": "デフォルト言語",
+    "entriesDir": "日記の保存先",
+    "globalDateFormat": "グローバル日付形式（任意）",
+    "globalDateFormatPlaceholder": "言語デフォルトを使用",
+    "globalDateFormatHint": "例：YYYY年MM月DD日（ddd）、MMM DD, YYYY (ddd)",
+    "languages": "言語",
+    "addLanguage": "+ 言語を追加",
+    "langCodePlaceholder": "コード（例：ko）",
+    "langNamePlaceholder": "名称（例：Korean）",
+    "langDateFormatPlaceholder": "日付形式",
+    "saved": "保存しました！",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "saving": "保存中...",
+    "ollamaInstallHint": "インストール：ollama pull {model}",
+    "ollamaGemma2_9b": "Gemma 2 9B（Google、推奨）",
+    "ollamaGemma2_2b": "Gemma 2 2B（Google、高速）",
+    "ollamaLlama3": "Llama 3.1 8B（Meta）",
+    "ollamaMistral": "Mistral 7B（Mistral AI）",
+    "ollamaPhi3": "Phi-3 Medium（Microsoft）",
+    "editLanguage": "編集"
+  },
+  "theme": {
+    "warm": "ウォーム",
+    "cool": "クール",
+    "dark": "ダーク",
+    "label": "テーマ"
+  },
+  "dialog": {
+    "unsavedTitle": "未保存の変更",
+    "unsavedMessage": "未保存の変更があります。破棄して続けますか？",
+    "deleteTitle": "日記を削除",
+    "deleteMessage": "この日記を削除しますか？"
+  },
+  "print": {
+    "title": "PDF出力",
+    "description": "含める内容を選択：",
+    "originalOnly": "原文のみ",
+    "originalAndAi": "原文 + AI結果",
+    "cancel": "キャンセル",
+    "original": "原文",
+    "corrected": "添削後",
+    "noAiResults": "先にAI添削または翻訳を実行してください"
+  }
+}

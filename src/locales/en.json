@@ -1,0 +1,120 @@
+{
+  "app": {
+    "title": "Diary Sensei",
+    "newEntry": "+ New",
+    "save": "Save",
+    "saving": "Saving...",
+    "exportPdf": "Export PDF",
+    "settings": "Settings",
+    "processing": "Processing...",
+    "submitCorrection": "Submit Correction",
+    "submitTranslation": "Submit Translation",
+    "created": "Created:",
+    "edited": "Edited:",
+    "titlePlaceholder": "Title...",
+    "correctionApplied": "Correction applied to editor.",
+    "undo": "Undo ({countdown})",
+    "newEntryTitle": "New entry for current date",
+    "deleteEntryTitle": "Delete entry"
+  },
+  "calendar": {
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "monthFormat": "{month} {year}",
+    "more": "+{count} more"
+  },
+  "entryList": {
+    "searchPlaceholder": "Search entries...",
+    "clearSearch": "Clear search",
+    "results": "Results",
+    "entries": "Entries",
+    "noMatchingEntries": "No matching entries",
+    "noEntriesThisMonth": "No entries this month",
+    "close": "Close"
+  },
+  "editor": {
+    "placeholderCorrection": "Write your diary in the target language...",
+    "placeholderTranslation": "Write your diary in your native language, AI will translate it...",
+    "contextMenuHeader": "Translate to...",
+    "translating": "Translating...",
+    "copy": "Copy"
+  },
+  "correction": {
+    "title": "Correction",
+    "perfect": "Perfect!",
+    "reviewing": "AI is reviewing...",
+    "correctedVersion": "Corrected version",
+    "whyChanges": "Why these changes?",
+    "acceptCorrection": "Accept Correction",
+    "placeholder": "Submit your writing to see AI corrections here."
+  },
+  "translation": {
+    "title": "Translation",
+    "language": "language",
+    "languages": "languages",
+    "translating": "Translating {count} {unit}...",
+    "original": "Original",
+    "placeholder": "Select target languages and submit to see translations here.",
+    "copy": "Copy"
+  },
+  "modeSelector": {
+    "writing": "Writing",
+    "translation": "Translation"
+  },
+  "settings": {
+    "title": "Settings",
+    "uiLanguage": "UI Language",
+    "aiProvider": "AI Provider",
+    "ollamaLocal": "Local (Ollama) — free, private",
+    "claudeApi": "Claude API — best quality, paid",
+    "ollamaHint": "Runs locally on your machine. No data leaves your computer.",
+    "claudeHint": "Requires API key. Data sent to Anthropic servers.",
+    "ollamaModel": "Ollama Model",
+    "ollamaUrl": "Ollama URL",
+    "claudeApiKey": "Claude API Key",
+    "claudeApiKeyHint": "Get your API key from console.anthropic.com",
+    "defaultLanguage": "Default Language",
+    "entriesDir": "Entries Directory",
+    "globalDateFormat": "Global Date Format (optional)",
+    "globalDateFormatPlaceholder": "Use language default",
+    "globalDateFormatHint": "e.g. YYYY年MM月DD日（ddd）, MMM DD, YYYY (ddd)",
+    "languages": "Languages",
+    "addLanguage": "+ Add Language",
+    "langCodePlaceholder": "Code (e.g. ko)",
+    "langNamePlaceholder": "Name (e.g. Korean)",
+    "langDateFormatPlaceholder": "Date format",
+    "saved": "Saved!",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "ollamaInstallHint": "Install with: ollama pull {model}",
+    "ollamaGemma2_9b": "Gemma 2 9B (Google, recommended)",
+    "ollamaGemma2_2b": "Gemma 2 2B (Google, faster)",
+    "ollamaLlama3": "Llama 3.1 8B (Meta)",
+    "ollamaMistral": "Mistral 7B (Mistral AI)",
+    "ollamaPhi3": "Phi-3 Medium (Microsoft)",
+    "editLanguage": "Edit"
+  },
+  "theme": {
+    "warm": "Warm",
+    "cool": "Cool",
+    "dark": "Dark",
+    "label": "Theme"
+  },
+  "dialog": {
+    "unsavedTitle": "Unsaved Changes",
+    "unsavedMessage": "You have unsaved changes. Discard and continue?",
+    "deleteTitle": "Delete Entry",
+    "deleteMessage": "Delete this entry?"
+  },
+  "print": {
+    "title": "Export PDF",
+    "description": "Choose what to include:",
+    "originalOnly": "Original Only",
+    "originalAndAi": "Original + AI Results",
+    "cancel": "Cancel",
+    "original": "Original",
+    "corrected": "Corrected",
+    "noAiResults": "Submit AI correction or translation first"
+  }
+}

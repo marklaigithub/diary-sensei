@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from 'svelte-i18n';
   import { editorContent, translations, isProcessing, config, selectedTargetLanguages } from './store';
   import type { AppConfig } from './types';
 
@@ -7,6 +8,7 @@
   let processing: boolean;
   let configVal: AppConfig;
   let selectedLangs: string[] = [];
+  let copiedLang: string | null = null;
 
   editorContent.subscribe(v => original = v);
   translations.subscribe(v => translationsVal = v);
@@ -19,19 +21,23 @@
     return lang?.name || code;
   }
 
-  function copyToClipboard(text: string) {
+  function copyToClipboard(text: string, langCode: string) {
     navigator.clipboard.writeText(text);
+    copiedLang = langCode;
+    setTimeout(() => { copiedLang = null; }, 1500);
   }
 
   $: hasTranslations = Object.keys(translationsVal).length > 0;
   $: translationEntries = Object.entries(translationsVal);
+  $: langCount = translationEntries.length;
+  $: loadingUnit = selectedLangs.length === 1 ? $t('translation.language') : $t('translation.languages');
 </script>
 
 <div class="translation-panel">
   <div class="panel-header">
-    <h3>Translation</h3>
+    <h3>{$t('translation.title')}</h3>
     {#if hasTranslations}
-      <span class="lang-count">{translationEntries.length} language{translationEntries.length > 1 ? 's' : ''}</span>
+      <span class="lang-count">{langCount} {langCount === 1 ? $t('translation.language') : $t('translation.languages')}</span>
     {/if}
   </div>
 
@@ -39,12 +45,12 @@
     {#if processing}
       <div class="loading">
         <div class="spinner"></div>
-        <span>Translating {selectedLangs.length} language{selectedLangs.length > 1 ? 's' : ''}...</span>
+        <span>{$t('translation.translating', { values: { count: selectedLangs.length, unit: loadingUnit } })}</span>
       </div>
     {:else if hasTranslations}
       <!-- Original text section -->
       <div class="section original-section">
-        <div class="section-label">Original</div>
+        <div class="section-label">{$t('translation.original')}</div>
         <div class="section-text">{original}</div>
       </div>
 
@@ -53,8 +59,8 @@
         <div class="section translated-section">
           <div class="section-header">
             <div class="section-label">{getLanguageName(langCode)}</div>
-            <button class="copy-btn" onclick={() => copyToClipboard(text)} title="Copy">
-              📋
+            <button class="copy-btn" onclick={() => copyToClipboard(text, langCode)} title={$t('translation.copy')}>
+              {copiedLang === langCode ? '✓' : '📋'}
             </button>
           </div>
           <div class="section-text">{text}</div>
@@ -62,7 +68,7 @@
       {/each}
     {:else}
       <div class="placeholder-msg">
-        Select target languages and submit to see translations here.
+        {$t('translation.placeholder')}
       </div>
     {/if}
   </div>

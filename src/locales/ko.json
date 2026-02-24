@@ -1,0 +1,120 @@
+{
+  "app": {
+    "title": "다이어리 센세이",
+    "newEntry": "+ 새로 만들기",
+    "save": "저장",
+    "saving": "저장 중...",
+    "exportPdf": "PDF 내보내기",
+    "settings": "설정",
+    "processing": "처리 중...",
+    "submitCorrection": "교정 제출",
+    "submitTranslation": "번역 제출",
+    "created": "작성:",
+    "edited": "편집:",
+    "titlePlaceholder": "제목...",
+    "correctionApplied": "교정 내용이 편집기에 적용되었습니다.",
+    "undo": "실행 취소 ({countdown})",
+    "newEntryTitle": "현재 날짜에 새 일기",
+    "deleteEntryTitle": "일기 삭제"
+  },
+  "calendar": {
+    "months": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+    "weekdays": ["월", "화", "수", "목", "금", "토", "일"],
+    "monthFormat": "{year}년 {month}",
+    "more": "+{count}개"
+  },
+  "entryList": {
+    "searchPlaceholder": "일기 검색...",
+    "clearSearch": "검색 지우기",
+    "results": "검색 결과",
+    "entries": "일기",
+    "noMatchingEntries": "일치하는 일기가 없습니다",
+    "noEntriesThisMonth": "이번 달 일기가 없습니다",
+    "close": "닫기"
+  },
+  "editor": {
+    "placeholderCorrection": "목표 언어로 일기를 써보세요...",
+    "placeholderTranslation": "모국어로 일기를 쓰면 AI가 번역해드립니다...",
+    "contextMenuHeader": "번역할 언어...",
+    "translating": "번역 중...",
+    "copy": "복사"
+  },
+  "correction": {
+    "title": "교정 결과",
+    "perfect": "완벽해요!",
+    "reviewing": "AI가 검토 중...",
+    "correctedVersion": "교정된 버전",
+    "whyChanges": "수정 이유",
+    "acceptCorrection": "교정 적용",
+    "placeholder": "글을 제출하면 AI 교정 결과가 여기에 표시됩니다."
+  },
+  "translation": {
+    "title": "번역 결과",
+    "language": "개 언어",
+    "languages": "개 언어",
+    "translating": "{count}{unit} 번역 중...",
+    "original": "원문",
+    "placeholder": "목표 언어를 선택하고 제출하면 번역 결과가 여기에 표시됩니다.",
+    "copy": "복사"
+  },
+  "modeSelector": {
+    "writing": "작문",
+    "translation": "번역"
+  },
+  "settings": {
+    "title": "설정",
+    "uiLanguage": "표시 언어",
+    "aiProvider": "AI 제공자",
+    "ollamaLocal": "로컬 (Ollama) — 무료, 프라이빗",
+    "claudeApi": "Claude API — 최고 품질, 유료",
+    "ollamaHint": "로컬에서 실행됩니다. 데이터가 외부로 전송되지 않습니다.",
+    "claudeHint": "API 키가 필요합니다. 데이터가 Anthropic 서버로 전송됩니다.",
+    "ollamaModel": "Ollama 모델",
+    "ollamaUrl": "Ollama URL",
+    "claudeApiKey": "Claude API 키",
+    "claudeApiKeyHint": "console.anthropic.com에서 API 키를 발급받으세요",
+    "defaultLanguage": "기본 언어",
+    "entriesDir": "일기 저장 폴더",
+    "globalDateFormat": "전역 날짜 형식 (선택)",
+    "globalDateFormatPlaceholder": "언어 기본값 사용",
+    "globalDateFormatHint": "예: YYYY년MM월DD일（ddd）, MMM DD, YYYY (ddd)",
+    "languages": "언어",
+    "addLanguage": "+ 언어 추가",
+    "langCodePlaceholder": "코드 (예: ko)",
+    "langNamePlaceholder": "이름 (예: Korean)",
+    "langDateFormatPlaceholder": "날짜 형식",
+    "saved": "저장되었습니다!",
+    "cancel": "취소",
+    "save": "저장",
+    "saving": "저장 중...",
+    "ollamaInstallHint": "설치 명령: ollama pull {model}",
+    "ollamaGemma2_9b": "Gemma 2 9B (Google, 추천)",
+    "ollamaGemma2_2b": "Gemma 2 2B (Google, 빠름)",
+    "ollamaLlama3": "Llama 3.1 8B (Meta)",
+    "ollamaMistral": "Mistral 7B (Mistral AI)",
+    "ollamaPhi3": "Phi-3 Medium (Microsoft)",
+    "editLanguage": "편집"
+  },
+  "theme": {
+    "warm": "따뜻한",
+    "cool": "시원한",
+    "dark": "어두운",
+    "label": "테마"
+  },
+  "dialog": {
+    "unsavedTitle": "저장되지 않은 변경사항",
+    "unsavedMessage": "저장되지 않은 변경사항이 있습니다. 취소하고 계속하시겠습니까?",
+    "deleteTitle": "일기 삭제",
+    "deleteMessage": "이 일기를 삭제하시겠습니까?"
+  },
+  "print": {
+    "title": "PDF 내보내기",
+    "description": "포함할 내용을 선택하세요:",
+    "originalOnly": "원문만",
+    "originalAndAi": "원문 + AI 결과",
+    "cancel": "취소",
+    "original": "원문",
+    "corrected": "교정 후",
+    "noAiResults": "먼저 AI 교정 또는 번역을 실행하세요"
+  }
+}

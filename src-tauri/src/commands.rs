@@ -91,7 +91,7 @@ pub struct CorrectionResult {
 }
 
 #[command]
-pub async fn correct_text(text: String, language: String) -> Result<CorrectionResult, String> {
+pub async fn correct_text(text: String, language: String, explanation_language: String) -> Result<CorrectionResult, String> {
     let config = config::load_app_config();
     let lang_name = config
         .languages
@@ -99,7 +99,7 @@ pub async fn correct_text(text: String, language: String) -> Result<CorrectionRe
         .find(|l| l.code == language)
         .map(|l| l.name.clone())
         .unwrap_or(language);
-    let system = claude::correction_prompt(&lang_name);
+    let system = claude::correction_prompt(&lang_name, &explanation_language);
 
     let raw = match config.ai_provider.as_str() {
         "claude" => {

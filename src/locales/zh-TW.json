@@ -1,0 +1,120 @@
+{
+  "app": {
+    "title": "日記先生",
+    "newEntry": "+ 新增",
+    "save": "儲存",
+    "saving": "儲存中...",
+    "exportPdf": "匯出 PDF",
+    "settings": "設定",
+    "processing": "處理中...",
+    "submitCorrection": "提交批改",
+    "submitTranslation": "提交翻譯",
+    "created": "建立：",
+    "edited": "編輯：",
+    "titlePlaceholder": "標題...",
+    "correctionApplied": "批改內容已套用至編輯器。",
+    "undo": "復原（{countdown}）",
+    "newEntryTitle": "新增當日日記",
+    "deleteEntryTitle": "刪除日記"
+  },
+  "calendar": {
+    "months": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+    "weekdays": ["一", "二", "三", "四", "五", "六", "日"],
+    "monthFormat": "{year} 年 {month} 月",
+    "more": "+{count} 則"
+  },
+  "entryList": {
+    "searchPlaceholder": "搜尋日記...",
+    "clearSearch": "清除搜尋",
+    "results": "搜尋結果",
+    "entries": "日記",
+    "noMatchingEntries": "找不到符合的日記",
+    "noEntriesThisMonth": "本月尚無日記",
+    "close": "關閉"
+  },
+  "editor": {
+    "placeholderCorrection": "用目標語言寫日記，AI 會批改...",
+    "placeholderTranslation": "用母語寫日記，AI 會翻譯成目標語言...",
+    "contextMenuHeader": "翻譯成...",
+    "translating": "翻譯中...",
+    "copy": "複製"
+  },
+  "correction": {
+    "title": "批改結果",
+    "perfect": "完美！",
+    "reviewing": "AI 批改中...",
+    "correctedVersion": "批改後版本",
+    "whyChanges": "為什麼這樣修改？",
+    "acceptCorrection": "接受批改",
+    "placeholder": "提交寫作後，AI 批改結果會顯示在這裡。"
+  },
+  "translation": {
+    "title": "翻譯結果",
+    "language": "種語言",
+    "languages": "種語言",
+    "translating": "翻譯 {count} {unit}中...",
+    "original": "原文",
+    "placeholder": "選擇目標語言並提交，翻譯結果會顯示在這裡。",
+    "copy": "複製"
+  },
+  "modeSelector": {
+    "writing": "寫作",
+    "translation": "翻譯"
+  },
+  "settings": {
+    "title": "設定",
+    "uiLanguage": "介面語言",
+    "aiProvider": "AI 提供者",
+    "ollamaLocal": "本機（Ollama）— 免費、私密",
+    "claudeApi": "Claude API — 品質最佳、付費",
+    "ollamaHint": "在本機執行，資料不會離開您的電腦。",
+    "claudeHint": "需要 API 金鑰，資料會傳送至 Anthropic 伺服器。",
+    "ollamaModel": "Ollama 模型",
+    "ollamaUrl": "Ollama 網址",
+    "claudeApiKey": "Claude API 金鑰",
+    "claudeApiKeyHint": "在 console.anthropic.com 取得您的 API 金鑰",
+    "defaultLanguage": "預設語言",
+    "entriesDir": "日記儲存目錄",
+    "globalDateFormat": "全域日期格式（選填）",
+    "globalDateFormatPlaceholder": "使用各語言預設格式",
+    "globalDateFormatHint": "例如：YYYY年MM月DD日（ddd）、MMM DD, YYYY (ddd)",
+    "languages": "語言",
+    "addLanguage": "+ 新增語言",
+    "langCodePlaceholder": "代碼（如 ko）",
+    "langNamePlaceholder": "名稱（如 Korean）",
+    "langDateFormatPlaceholder": "日期格式",
+    "saved": "已儲存！",
+    "cancel": "取消",
+    "save": "儲存",
+    "saving": "儲存中...",
+    "ollamaInstallHint": "安裝指令：ollama pull {model}",
+    "ollamaGemma2_9b": "Gemma 2 9B（Google，推薦）",
+    "ollamaGemma2_2b": "Gemma 2 2B（Google，較快）",
+    "ollamaLlama3": "Llama 3.1 8B（Meta）",
+    "ollamaMistral": "Mistral 7B（Mistral AI）",
+    "ollamaPhi3": "Phi-3 Medium（Microsoft）",
+    "editLanguage": "編輯"
+  },
+  "theme": {
+    "warm": "暖色",
+    "cool": "冷色",
+    "dark": "深色",
+    "label": "佈景主題"
+  },
+  "dialog": {
+    "unsavedTitle": "未儲存的變更",
+    "unsavedMessage": "您有未儲存的變更，確定要放棄並繼續嗎？",
+    "deleteTitle": "刪除日記",
+    "deleteMessage": "確定要刪除這篇日記嗎？"
+  },
+  "print": {
+    "title": "匯出 PDF",
+    "description": "選擇要包含的內容：",
+    "originalOnly": "僅原文",
+    "originalAndAi": "原文 + AI 結果",
+    "cancel": "取消",
+    "original": "原文",
+    "corrected": "批改後",
+    "noAiResults": "請先提交 AI 批改或翻譯"
+  }
+}

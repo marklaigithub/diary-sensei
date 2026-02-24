@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { diffChars } from 'diff';
   import type { Change } from 'diff';
-  import { editorContent, translations, isProcessing, selectedTargetLanguages, explanation } from './store';
+  import { editorContent, translations, isProcessing, selectedTargetLanguages, explanation, correctionOriginal } from './store';
 
   const dispatch = createEventDispatcher();
 
@@ -11,7 +12,9 @@
   let processing: boolean;
   let selectedLangs: string[] = [];
   let explanationText: string | null = null;
+  let corrOriginal: string = '';
 
+  correctionOriginal.subscribe(v => corrOriginal = v);
   editorContent.subscribe(v => original = v);
   selectedTargetLanguages.subscribe(v => selectedLangs = v);
   translations.subscribe(v => {
@@ -26,15 +29,15 @@
     return diffChars(orig, corr);
   }
 
-  $: diffParts = computeDiff(original, corrected);
+  $: diffParts = computeDiff(corrOriginal || original, corrected);
   $: hasChanges = diffParts.some(p => p.added || p.removed);
 </script>
 
 <div class="correction-panel">
   <div class="panel-header">
-    <h3>Correction</h3>
+    <h3>{$t('correction.title')}</h3>
     {#if corrected && !hasChanges}
-      <span class="badge perfect">Perfect!</span>
+      <span class="badge perfect">{$t('correction.perfect')}</span>
     {/if}
   </div>
 
@@ -42,7 +45,7 @@
     {#if processing}
       <div class="loading">
         <div class="spinner"></div>
-        <span>AI is reviewing...</span>
+        <span>{$t('correction.reviewing')}</span>
       </div>
     {:else if corrected}
       <div class="diff-display">
@@ -58,25 +61,25 @@
       </div>
 
       <div class="corrected-full">
-        <h4>Corrected version</h4>
+        <h4>{$t('correction.correctedVersion')}</h4>
         <div class="text-block">{corrected}</div>
       </div>
 
       {#if explanationText}
         <div class="explanation-section">
-          <h4>Why these changes?</h4>
+          <h4>{$t('correction.whyChanges')}</h4>
           <div class="explanation-text">{explanationText}</div>
         </div>
       {/if}
 
       <div class="action-bar">
         <button class="btn btn-accept" onclick={() => dispatch('apply')}>
-          ✓ Accept Correction
+          ✓ {$t('correction.acceptCorrection')}
         </button>
       </div>
     {:else}
       <div class="placeholder-msg">
-        Submit your writing to see AI corrections here.
+        {$t('correction.placeholder')}
       </div>
     {/if}
   </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from 'svelte-i18n';
   import { appMode, config, selectedTargetLanguages } from './store';
   import type { AppMode, AppConfig } from './types';
 
@@ -43,14 +44,14 @@
       class:active={mode === 'correction'}
       onclick={() => setMode('correction')}
     >
-      ✍️ Writing
+      ✍️ {$t('modeSelector.writing')}
     </button>
     <button
       class="mode-btn"
       class:active={mode === 'translation'}
       onclick={() => setMode('translation')}
     >
-      🔄 Translation
+      🔄 {$t('modeSelector.translation')}
     </button>
   </div>
 

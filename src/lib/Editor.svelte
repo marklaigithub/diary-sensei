@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { editorContent, appMode, config } from './store';
   import type { AppConfig } from './types';
 
@@ -26,17 +27,11 @@
   let bubbleText = '';
   let bubbleLang = '';
   let bubbleLoading = false;
+  let copied = false;
 
   function handleInput(e: Event) {
     const textarea = e.target as HTMLTextAreaElement;
     editorContent.set(textarea.value);
-  }
-
-  function getPlaceholder(): string {
-    if (modeVal === 'correction') {
-      return 'Write your diary in the target language...';
-    }
-    return '用繁體中文寫日記，AI 會翻譯成目標語言...';
   }
 
   function handleContextMenu(e: MouseEvent) {
@@ -80,11 +75,14 @@
 
   function copyBubbleText() {
     navigator.clipboard.writeText(bubbleText);
+    copied = true;
+    setTimeout(() => { copied = false; }, 1500);
   }
 
   function closeBubble() {
     showBubble = false;
     bubbleText = '';
+    copied = false;
   }
 
   function handleWindowClick(e: MouseEvent) {
@@ -106,7 +104,7 @@
     value={content}
     oninput={handleInput}
     oncontextmenu={handleContextMenu}
-    placeholder={getPlaceholder()}
+    placeholder={modeVal === 'correction' ? $t('editor.placeholderCorrection') : $t('editor.placeholderTranslation')}
     spellcheck="false"
   ></textarea>
 </div>
@@ -114,7 +112,7 @@
 <!-- Context menu and bubble use position:fixed to avoid overflow:hidden clipping -->
 {#if showContextMenu}
   <div class="context-menu" style="left: {contextMenuX}px; top: {contextMenuY}px;">
-    <div class="context-menu-header">Translate to...</div>
+    <div class="context-menu-header">{$t('editor.contextMenuHeader')}</div>
     {#each configVal?.languages || [] as lang}
       <button
         class="context-menu-item"
@@ -131,7 +129,9 @@
     <div class="bubble-header">
       <span class="bubble-lang">{bubbleLang}</span>
       {#if bubbleText}
-        <button class="bubble-copy" onclick={copyBubbleText} title="Copy">📋</button>
+        <button class="bubble-copy" onclick={copyBubbleText} title={$t('editor.copy')}>
+          {copied ? '✓' : '📋'}
+        </button>
       {/if}
       <button class="bubble-close" onclick={closeBubble}>✕</button>
     </div>
@@ -139,7 +139,7 @@
       {#if bubbleLoading}
         <div class="bubble-loading">
           <span class="bubble-spinner"></span>
-          Translating...
+          {$t('editor.translating')}
         </div>
       {:else}
         {bubbleText}

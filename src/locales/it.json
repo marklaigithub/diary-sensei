@@ -1,0 +1,120 @@
+{
+  "app": {
+    "title": "Diary Sensei",
+    "newEntry": "+ Nuovo",
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "exportPdf": "Esporta PDF",
+    "settings": "Impostazioni",
+    "processing": "Elaborazione...",
+    "submitCorrection": "Invia correzione",
+    "submitTranslation": "Invia traduzione",
+    "created": "Creato:",
+    "edited": "Modificato:",
+    "titlePlaceholder": "Titolo...",
+    "correctionApplied": "Correzione applicata all'editor.",
+    "undo": "Annulla ({countdown})",
+    "newEntryTitle": "Nuova voce per la data corrente",
+    "deleteEntryTitle": "Elimina voce"
+  },
+  "calendar": {
+    "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+    "weekdays": ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
+    "monthFormat": "{month} {year}",
+    "more": "+{count} altri"
+  },
+  "entryList": {
+    "searchPlaceholder": "Cerca diari...",
+    "clearSearch": "Cancella ricerca",
+    "results": "Risultati",
+    "entries": "Diari",
+    "noMatchingEntries": "Nessun diario trovato",
+    "noEntriesThisMonth": "Nessun diario questo mese",
+    "close": "Chiudi"
+  },
+  "editor": {
+    "placeholderCorrection": "Scrivi il tuo diario nella lingua obiettivo...",
+    "placeholderTranslation": "Scrivi il tuo diario nella tua lingua, l'AI lo tradurrà...",
+    "contextMenuHeader": "Traduci in...",
+    "translating": "Traduzione...",
+    "copy": "Copia"
+  },
+  "correction": {
+    "title": "Correzione",
+    "perfect": "Perfetto!",
+    "reviewing": "L'AI sta correggendo...",
+    "correctedVersion": "Versione corretta",
+    "whyChanges": "Perché queste modifiche?",
+    "acceptCorrection": "Accetta correzione",
+    "placeholder": "Invia il tuo testo per vedere le correzioni AI qui."
+  },
+  "translation": {
+    "title": "Traduzione",
+    "language": "lingua",
+    "languages": "lingue",
+    "translating": "Traduzione in {count} {unit}...",
+    "original": "Originale",
+    "placeholder": "Seleziona le lingue obiettivo e invia per vedere le traduzioni qui.",
+    "copy": "Copia"
+  },
+  "modeSelector": {
+    "writing": "Scrittura",
+    "translation": "Traduzione"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "uiLanguage": "Lingua interfaccia",
+    "aiProvider": "Provider AI",
+    "ollamaLocal": "Locale (Ollama) — gratuito, privato",
+    "claudeApi": "Claude API — qualità migliore, a pagamento",
+    "ollamaHint": "Eseguito localmente. Nessun dato lascia il tuo computer.",
+    "claudeHint": "Richiede chiave API. I dati vengono inviati ai server Anthropic.",
+    "ollamaModel": "Modello Ollama",
+    "ollamaUrl": "URL Ollama",
+    "claudeApiKey": "Chiave API Claude",
+    "claudeApiKeyHint": "Ottieni la tua chiave API su console.anthropic.com",
+    "defaultLanguage": "Lingua predefinita",
+    "entriesDir": "Cartella diari",
+    "globalDateFormat": "Formato data globale (opzionale)",
+    "globalDateFormatPlaceholder": "Usa il formato predefinito della lingua",
+    "globalDateFormatHint": "es. YYYY年MM月DD日（ddd）, MMM DD, YYYY (ddd)",
+    "languages": "Lingue",
+    "addLanguage": "+ Aggiungi lingua",
+    "langCodePlaceholder": "Codice (es. ko)",
+    "langNamePlaceholder": "Nome (es. Korean)",
+    "langDateFormatPlaceholder": "Formato data",
+    "saved": "Salvato!",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "ollamaInstallHint": "Installa con: ollama pull {model}",
+    "ollamaGemma2_9b": "Gemma 2 9B (Google, consigliato)",
+    "ollamaGemma2_2b": "Gemma 2 2B (Google, più veloce)",
+    "ollamaLlama3": "Llama 3.1 8B (Meta)",
+    "ollamaMistral": "Mistral 7B (Mistral AI)",
+    "ollamaPhi3": "Phi-3 Medium (Microsoft)",
+    "editLanguage": "Modifica"
+  },
+  "theme": {
+    "warm": "Caldo",
+    "cool": "Fresco",
+    "dark": "Scuro",
+    "label": "Tema"
+  },
+  "dialog": {
+    "unsavedTitle": "Modifiche non salvate",
+    "unsavedMessage": "Hai modifiche non salvate. Vuoi scartarle e continuare?",
+    "deleteTitle": "Elimina diario",
+    "deleteMessage": "Eliminare questo diario?"
+  },
+  "print": {
+    "title": "Esporta PDF",
+    "description": "Scegli cosa includere:",
+    "originalOnly": "Solo originale",
+    "originalAndAi": "Originale + Risultati AI",
+    "cancel": "Annulla",
+    "original": "Originale",
+    "corrected": "Corretto",
+    "noAiResults": "Prima invia la correzione o traduzione AI"
+  }
+}
