@@ -5,6 +5,8 @@ export interface EntryMeta {
   mode: 'correction' | 'translation';
   languages: string[];     // target languages, e.g. ["ja", "en"]
   date_format?: string;
+  created_at?: string;     // ISO 8601: "2026-02-24T14:30:52"
+  updated_at?: string;     // ISO 8601: "2026-02-24T14:30:52"
 }
 
 export interface DiaryEntry {
@@ -19,6 +21,8 @@ export interface EntryListItem {
   title: string;
   mode: string;
   languages: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface LanguageConfig {

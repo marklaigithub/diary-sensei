@@ -13,6 +13,8 @@ pub struct EntryMeta {
     pub mode: String,         // "correction" or "translation"
     pub languages: Vec<String>, // target languages, e.g. ["ja", "en"]
     pub date_format: Option<String>,
+    pub created_at: Option<String>,  // ISO 8601: "2026-02-24T14:30:52"
+    pub updated_at: Option<String>,  // ISO 8601: "2026-02-24T14:30:52"
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,6 +31,8 @@ pub struct EntryListItem {
     pub title: String,
     pub mode: String,
     pub languages: Vec<String>,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
 }
 
 fn entries_dir() -> PathBuf {
@@ -73,6 +77,8 @@ pub fn list_entries_for_month(year: i32, month: u32) -> Result<Vec<EntryListItem
                         title: meta.title,
                         mode: meta.mode,
                         languages: meta.languages,
+                        created_at: meta.created_at,
+                        updated_at: meta.updated_at,
                     });
                 }
             }
@@ -81,6 +87,69 @@ pub fn list_entries_for_month(year: i32, month: u32) -> Result<Vec<EntryListItem
 
     entries.sort_by(|a, b| b.id.cmp(&a.id));
     Ok(entries)
+}
+
+pub fn search_entries(query: &str) -> Result<Vec<EntryListItem>, String> {
+    let base = entries_dir();
+    if !base.exists() {
+        return Ok(vec![]);
+    }
+
+    let query_lower = query.to_lowercase();
+    let mut results = vec![];
+
+    // Walk through all year/month directories
+    let years = fs::read_dir(&base).map_err(|e| e.to_string())?;
+    for year_entry in years {
+        let year_entry = year_entry.map_err(|e| e.to_string())?;
+        let year_path = year_entry.path();
+        if !year_path.is_dir() { continue; }
+
+        let months = match fs::read_dir(&year_path) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+        for month_entry in months {
+            let month_entry = month_entry.map_err(|e| e.to_string())?;
+            let month_path = month_entry.path();
+            if !month_path.is_dir() { continue; }
+
+            let files = match fs::read_dir(&month_path) {
+                Ok(f) => f,
+                Err(_) => continue,
+            };
+            for file_entry in files {
+                let file_entry = file_entry.map_err(|e| e.to_string())?;
+                let path = file_entry.path();
+                if !path.extension().map_or(false, |ext| ext == "md") { continue; }
+
+                if let Ok(content) = fs::read_to_string(&path) {
+                    // Check if title or body contains the query
+                    if content.to_lowercase().contains(&query_lower) {
+                        if let Some(mut meta) = parse_frontmatter(&content) {
+                            if meta.id.is_empty() {
+                                if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                                    meta.id = stem.to_string();
+                                }
+                            }
+                            results.push(EntryListItem {
+                                id: meta.id,
+                                date: meta.date,
+                                title: meta.title,
+                                mode: meta.mode,
+                                languages: meta.languages,
+                                created_at: meta.created_at,
+                                updated_at: meta.updated_at,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    results.sort_by(|a, b| b.id.cmp(&a.id));
+    Ok(results)
 }
 
 pub fn read_entry_by_id(id: &str) -> Result<DiaryEntry, String> {
@@ -185,18 +254,28 @@ fn parse_frontmatter(content: &str) -> Option<EntryMeta> {
     let mut mode = String::new();
     let mut date = String::new();
     let mut date_format = None;
+    let mut created_at = None;
+    let mut updated_at = None;
 
     for line in yaml.lines() {
         let line = line.trim();
         if let Some((key, value)) = line.split_once(':') {
             let key = key.trim();
-            let value = value.trim().trim_matches('"');
+            // For created_at/updated_at, the value contains colons (e.g. "2026-02-24T14:30:52")
+            // so we need to rejoin everything after the first colon
+            let value = if key == "created_at" || key == "updated_at" {
+                line.splitn(2, ':').nth(1).unwrap_or("").trim().trim_matches('"')
+            } else {
+                value.trim().trim_matches('"')
+            };
             match key {
                 "id" => id = value.to_string(),
                 "title" => title = value.to_string(),
                 "mode" => mode = value.to_string(),
                 "date" => date = value.to_string(),
                 "date_format" => date_format = Some(value.to_string()),
+                "created_at" => created_at = Some(value.to_string()),
+                "updated_at" => updated_at = Some(value.to_string()),
                 "language" => language = value.to_string(),
                 "languages" => {
                     // Parse YAML inline list: [ja, en] or [ja]
@@ -224,6 +303,8 @@ fn parse_frontmatter(content: &str) -> Option<EntryMeta> {
         mode,
         languages,
         date_format,
+        created_at,
+        updated_at,
     })
 }
 
@@ -311,19 +392,35 @@ fn serialize_entry(entry: &DiaryEntry) -> String {
         .map(|f| format!("date_format: \"{}\"\n", f))
         .unwrap_or_default();
 
+    let created_at_line = entry
+        .meta
+        .created_at
+        .as_ref()
+        .map(|t| format!("created_at: {}\n", t))
+        .unwrap_or_default();
+
+    let updated_at_line = entry
+        .meta
+        .updated_at
+        .as_ref()
+        .map(|t| format!("updated_at: {}\n", t))
+        .unwrap_or_default();
+
     let languages_str = format!(
         "[{}]",
         entry.meta.languages.join(", ")
     );
 
     let mut output = format!(
-        "---\nid: {}\ntitle: {}\ndate: {}\nmode: {}\nlanguages: {}\n{}---\n\n# Original\n\n{}\n",
+        "---\nid: {}\ntitle: {}\ndate: {}\nmode: {}\nlanguages: {}\n{}{}{}---\n\n# Original\n\n{}\n",
         entry.meta.id,
         entry.meta.title,
         entry.meta.date,
         entry.meta.mode,
         languages_str,
         date_format_line,
+        created_at_line,
+        updated_at_line,
         entry.original,
     );
 

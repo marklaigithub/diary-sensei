@@ -107,10 +107,22 @@ input:focus, textarea:focus, select:focus {
   text-decoration: line-through;
 }
 
+/* Print-only elements: hidden on screen, shown when printing */
+.print-only {
+  display: none !important;
+}
+
 /* Print styles */
 @media print {
-  .sidebar, .toolbar, .mode-selector, .no-print {
+  .sidebar, .toolbar, .mode-selector, .no-print,
+  .editor-panel, .panel-footer, .panel-header,
+  .action-bar, .btn-accept,
+  .correction-panel, .copy-btn {
     display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
   }
 
   body {
@@ -118,20 +130,54 @@ input:focus, textarea:focus, select:focus {
     color: black;
   }
 
-  .main-content {
+  .app-layout {
     display: block !important;
+  }
+
+  .main-content {
+    display: none !important;
+  }
+
+  .result-panel {
     width: 100% !important;
+    max-width: 100% !important;
+    background: white !important;
   }
 
-  .diff-added {
-    background: #d4edda !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  .print-header {
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #333;
   }
 
-  .diff-removed {
-    background: #f8d7da !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  .print-header h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .print-header .print-date {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .print-section {
+    margin-bottom: 20px;
+  }
+
+  .print-section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .print-text {
+    line-height: 1.8;
+    font-size: 14px;
+    white-space: pre-wrap;
   }
 }

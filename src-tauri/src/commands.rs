@@ -10,6 +10,11 @@ pub async fn list_entries(year: i32, month: u32) -> Result<Vec<EntryListItem>, S
 }
 
 #[command]
+pub async fn search_entries(query: String) -> Result<Vec<EntryListItem>, String> {
+    storage::search_entries(&query)
+}
+
+#[command]
 pub async fn read_entry(id: String) -> Result<DiaryEntry, String> {
     storage::read_entry_by_id(&id)
 }
@@ -24,8 +29,28 @@ pub async fn save_entry(
     original: String,
     translations: HashMap<String, String>,
     date_format: Option<String>,
+    created_at: Option<String>,
 ) -> Result<String, String> {
+    let now = chrono::Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+    let is_new = id.is_none();
     let entry_id = id.unwrap_or_else(|| storage::generate_entry_id(&date));
+
+    let final_created_at = if is_new {
+        Some(now.clone())
+    } else {
+        // Preserve existing created_at, or derive from id for old entries
+        created_at.or_else(|| {
+            // Derive from id: "2026-02-24_143052" -> "2026-02-24T14:30:52"
+            let parts: Vec<&str> = entry_id.splitn(2, '_').collect();
+            if parts.len() == 2 && parts[1].len() >= 6 {
+                let t = parts[1];
+                Some(format!("{}T{}:{}:{}", parts[0], &t[0..2], &t[2..4], &t[4..6]))
+            } else {
+                None
+            }
+        })
+    };
+
     let entry = DiaryEntry {
         meta: EntryMeta {
             id: entry_id.clone(),
@@ -34,6 +59,8 @@ pub async fn save_entry(
             mode,
             languages,
             date_format,
+            created_at: final_created_at,
+            updated_at: Some(now),
         },
         original,
         translations,

@@ -29,6 +29,8 @@
   let processingVal: boolean;
   let errorVal: string;
   let selectedLangsVal: string[];
+  let dateVal: string = '';
+  let editorRef: Editor;
 
   config.subscribe(v => configVal = v);
   showSettings.subscribe(v => showSettingsVal = v);
@@ -42,6 +44,7 @@
   isProcessing.subscribe(v => processingVal = v);
   error.subscribe(v => errorVal = v);
   selectedTargetLanguages.subscribe(v => selectedLangsVal = v);
+  currentDate.subscribe(v => dateVal = v);
 
   onMount(async () => {
     try {
@@ -126,8 +129,6 @@
   }
 
   async function handleSave() {
-    let dateVal: string = '';
-    currentDate.subscribe(v => dateVal = v)();
     let entryIdVal: string | null = null;
     currentEntryId.subscribe(v => entryIdVal = v)();
 
@@ -140,6 +141,7 @@
         languages: selectedLangsVal,
         original: editorVal,
         translations: translationsVal,
+        createdAt: currentEntryVal?.meta?.created_at || null,
       });
       currentEntryId.set(savedId);
       await loadEntries();
@@ -147,6 +149,13 @@
     } catch (e: any) {
       error.set('Save failed: ' + e.toString());
     }
+  }
+
+  function formatTimestamp(ts: string): string {
+    // "2026-02-24T14:30:52" -> "2026/02/24 14:30"
+    const [datePart, timePart] = ts.split('T');
+    if (!timePart) return datePart;
+    return `${datePart.replace(/-/g, '/')} ${timePart.slice(0, 5)}`;
   }
 
   function handleNewEntry() {
@@ -162,6 +171,24 @@
     const corrected = translationsVal[langKey];
     if (corrected) {
       editorContent.set(corrected);
+    }
+  }
+
+  async function handleQuickTranslate(event: CustomEvent<{text: string, targetLanguage: string}>) {
+    const { text, targetLanguage } = event.detail;
+    try {
+      const results: Record<string, string> = await invoke('translate_text', {
+        text,
+        targetLanguages: [targetLanguage],
+      });
+      const translated = results[targetLanguage] || '';
+      if (editorRef) {
+        editorRef.setQuickTranslation(translated);
+      }
+    } catch (e: any) {
+      if (editorRef) {
+        editorRef.setQuickTranslation(`Error: ${e.toString()}`);
+      }
     }
   }
 
@@ -210,16 +237,34 @@
               + New
             </button>
           </div>
-          <input
-            type="text"
-            class="title-input"
-            placeholder="Title..."
-            value={titleVal}
-            oninput={(e) => entryTitle.set((e.target as HTMLInputElement).value)}
-          />
+          <div class="title-row">
+            <input
+              type="text"
+              class="title-input"
+              placeholder="Title..."
+              value={titleVal}
+              oninput={(e) => entryTitle.set((e.target as HTMLInputElement).value)}
+            />
+            <input
+              type="date"
+              class="date-input"
+              value={dateVal}
+              oninput={(e) => currentDate.set((e.target as HTMLInputElement).value)}
+            />
+          </div>
+          {#if currentEntryVal?.meta?.created_at || currentEntryVal?.meta?.updated_at}
+            <div class="timestamps">
+              {#if currentEntryVal.meta.created_at}
+                <span>Created: {formatTimestamp(currentEntryVal.meta.created_at)}</span>
+              {/if}
+              {#if currentEntryVal.meta.updated_at}
+                <span>Edited: {formatTimestamp(currentEntryVal.meta.updated_at)}</span>
+              {/if}
+            </div>
+          {/if}
         </div>
 
-        <Editor />
+        <Editor bind:this={editorRef} on:quickTranslate={handleQuickTranslate} />
 
         <div class="editor-footer">
           {#if errorVal}
@@ -246,8 +291,25 @@
 
   <!-- Result panel -->
   <aside class="result-panel">
+    <!-- Print-only header with title and date -->
+    <div class="print-only print-header">
+      <h1>{titleVal || `${dateVal} diary`}</h1>
+      <div class="print-date">{dateVal}</div>
+    </div>
+
     {#if modeVal === 'correction'}
       <Correction on:apply={handleApplyCorrection} />
+      <!-- Print-only: clean corrected text without diff -->
+      {#if Object.keys(translationsVal).length > 0}
+        <div class="print-only print-section">
+          <div class="print-section-label">Original</div>
+          <div class="print-text">{editorVal}</div>
+        </div>
+        <div class="print-only print-section">
+          <div class="print-section-label">Corrected</div>
+          <div class="print-text">{translationsVal[selectedLangsVal[0]] || ''}</div>
+        </div>
+      {/if}
     {:else}
       <Translation />
     {/if}
@@ -369,6 +431,33 @@
   }
 
   .title-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .title-row .title-input {
+    flex: 1;
+  }
+
+  .date-input {
+    font-size: 13px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .timestamps {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
     color: var(--text-muted);
   }
 

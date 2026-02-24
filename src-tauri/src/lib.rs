@@ -23,6 +23,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             list_entries,
+            search_entries,
             read_entry,
             save_entry,
             save_image,

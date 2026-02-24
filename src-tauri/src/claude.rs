@@ -6,8 +6,9 @@ use serde::{Deserialize, Serialize};
 pub fn correction_prompt(language: &str) -> String {
     format!(
         "You are a skilled {} language teacher. \
-        A student wrote the following diary entry in {}. \
-        Correct grammatical errors, unnatural expressions, and word choice. \
+        The student's diary may contain text in multiple languages. \
+        Only correct the {} portions — fix grammar, unnatural expressions, and word choice. \
+        Preserve ALL text in other languages exactly as-is. \
         Preserve all emoji, image references (![...](path)), and formatting. \
         Return ONLY the corrected text, nothing else.",
         language, language
