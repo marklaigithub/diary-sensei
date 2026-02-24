@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { invoke } from '@tauri-apps/api/core';
   import { config } from './store';
   import type { AppConfig } from './types';
 
@@ -14,8 +15,11 @@
 
   function selectTheme(themeId: string) {
     document.documentElement.dataset.theme = themeId;
-    config.update(c => ({ ...c, theme: themeId }));
+    const updated = { ...configVal, theme: themeId };
+    config.set(updated);
     showDropdown = false;
+    // Persist theme choice (fire-and-forget)
+    invoke('save_config', { config: updated }).catch(console.error);
   }
 
   function getCurrentIcon(): string {

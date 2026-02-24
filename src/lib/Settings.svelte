@@ -16,6 +16,10 @@
   let defaultLang = $state('');
   let entriesDir = $state('');
   let globalDateFormat = $state('');
+  let languages = $state<LanguageConfig[]>([]);
+  let editingLangIdx = $state<number | null>(null);
+  let addingLang = $state(false);
+  let editForm = $state({ code: '', name: '', date_format: '' });
 
   $effect(() => {
     if (configVal) {
@@ -26,8 +30,46 @@
       defaultLang = configVal.default_language || 'ja';
       entriesDir = configVal.entries_dir || '';
       globalDateFormat = configVal.global_date_format || '';
+      languages = (configVal.languages || []).map(l => ({ ...l }));
     }
   });
+
+  function startEditLang(idx: number) {
+    editingLangIdx = idx;
+    editForm = { ...languages[idx] };
+  }
+
+  function cancelEditLang() {
+    editingLangIdx = null;
+    addingLang = false;
+    editForm = { code: '', name: '', date_format: '' };
+  }
+
+  function saveEditLang() {
+    if (!editForm.code.trim() || !editForm.name.trim()) return;
+    if (addingLang) {
+      languages = [...languages, { ...editForm }];
+      addingLang = false;
+    } else if (editingLangIdx !== null) {
+      languages = languages.map((l, i) => i === editingLangIdx ? { ...editForm } : l);
+      editingLangIdx = null;
+    }
+    editForm = { code: '', name: '', date_format: '' };
+  }
+
+  function deleteLang(idx: number) {
+    const deleted = languages[idx];
+    languages = languages.filter((_, i) => i !== idx);
+    if (deleted.code === defaultLang) {
+      defaultLang = languages.length > 0 ? languages[0].code : '';
+    }
+  }
+
+  function startAddLang() {
+    addingLang = true;
+    editingLangIdx = null;
+    editForm = { code: '', name: '', date_format: '' };
+  }
 
   async function handleSave() {
     saving = true;
@@ -42,6 +84,7 @@
         default_language: defaultLang,
         entries_dir: entriesDir,
         global_date_format: globalDateFormat || null,
+        languages: languages,
       };
       await invoke('save_config', { config: updated });
       config.set(updated);
@@ -121,7 +164,7 @@
     <div class="setting-group">
       <label class="setting-label">Default Language</label>
       <select class="setting-input" bind:value={defaultLang}>
-        {#each configVal?.languages || [] as lang}
+        {#each languages as lang}
           <option value={lang.code}>{lang.name} ({lang.code})</option>
         {/each}
       </select>
@@ -151,13 +194,42 @@
     <div class="setting-group">
       <label class="setting-label">Languages</label>
       <div class="languages-list">
-        {#each configVal?.languages || [] as lang}
-          <div class="lang-item">
-            <span class="lang-code">{lang.code}</span>
-            <span class="lang-name">{lang.name}</span>
-            <span class="lang-format">{lang.date_format}</span>
-          </div>
+        {#each languages as lang, idx}
+          {#if editingLangIdx === idx}
+            <div class="lang-edit-form">
+              <input type="text" class="lang-input" bind:value={editForm.code} placeholder="Code (e.g. ko)" />
+              <input type="text" class="lang-input lang-input-wide" bind:value={editForm.name} placeholder="Name (e.g. Korean)" />
+              <input type="text" class="lang-input lang-input-wide" bind:value={editForm.date_format} placeholder="Date format" />
+              <div class="lang-edit-actions">
+                <button class="lang-action-btn save" onclick={saveEditLang} title="Save">✓</button>
+                <button class="lang-action-btn cancel" onclick={cancelEditLang} title="Cancel">✕</button>
+              </div>
+            </div>
+          {:else}
+            <div class="lang-item">
+              <span class="lang-code">{lang.code}</span>
+              <span class="lang-name">{lang.name}</span>
+              <span class="lang-format">{lang.date_format}</span>
+              <div class="lang-item-actions">
+                <button class="lang-action-btn" onclick={() => startEditLang(idx)} title="Edit">✎</button>
+                <button class="lang-action-btn delete" onclick={() => deleteLang(idx)} title="Delete">✕</button>
+              </div>
+            </div>
+          {/if}
         {/each}
+        {#if addingLang}
+          <div class="lang-edit-form">
+            <input type="text" class="lang-input" bind:value={editForm.code} placeholder="Code (e.g. ko)" />
+            <input type="text" class="lang-input lang-input-wide" bind:value={editForm.name} placeholder="Name (e.g. Korean)" />
+            <input type="text" class="lang-input lang-input-wide" bind:value={editForm.date_format} placeholder="Date format" />
+            <div class="lang-edit-actions">
+              <button class="lang-action-btn save" onclick={saveEditLang} title="Save">✓</button>
+              <button class="lang-action-btn cancel" onclick={cancelEditLang} title="Cancel">✕</button>
+            </div>
+          </div>
+        {:else}
+          <button class="add-lang-btn" onclick={startAddLang}>+ Add Language</button>
+        {/if}
       </div>
     </div>
   </div>
@@ -269,6 +341,86 @@
   .lang-format {
     color: var(--text-muted);
     font-size: 12px;
+  }
+
+  .lang-item-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .lang-item:hover .lang-item-actions {
+    opacity: 1;
+  }
+
+  .lang-action-btn {
+    font-size: 13px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  .lang-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  .lang-action-btn.save {
+    color: var(--diff-added-text);
+  }
+
+  .lang-action-btn.cancel,
+  .lang-action-btn.delete {
+    color: var(--diff-removed-text);
+  }
+
+  .lang-edit-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+  }
+
+  .lang-input {
+    padding: 4px 8px;
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 13px;
+    width: 60px;
+  }
+
+  .lang-input-wide {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .lang-edit-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .add-lang-btn {
+    width: 100%;
+    padding: 8px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+
+  .add-lang-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--bg-hover);
   }
 
   .settings-footer {

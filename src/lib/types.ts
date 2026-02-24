@@ -45,5 +45,10 @@ export interface AppConfig {
   ollama_url: string;
 }
 
+export interface CorrectionResult {
+  corrected: string;
+  explanation: string | null;
+}
+
 export type AppMode = 'correction' | 'translation';
 export type ViewMode = 'edit' | 'read';

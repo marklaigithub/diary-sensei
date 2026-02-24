@@ -31,5 +31,7 @@ export const entryTitle = writable<string>('');
 export const translations = writable<Record<string, string>>({});
 export const selectedTargetLanguages = writable<string[]>(['ja']);
 export const isProcessing = writable<boolean>(false);
+export const isDirty = writable<boolean>(false);
+export const explanation = writable<string | null>(null);
 export const searchQuery = writable<string>('');
 export const searchResults = writable<EntryListItem[] | null>(null);

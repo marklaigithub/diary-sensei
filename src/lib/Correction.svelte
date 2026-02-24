@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { diffChars } from 'diff';
   import type { Change } from 'diff';
-  import { editorContent, translations, isProcessing, selectedTargetLanguages } from './store';
+  import { editorContent, translations, isProcessing, selectedTargetLanguages, explanation } from './store';
 
   const dispatch = createEventDispatcher();
 
@@ -10,6 +10,7 @@
   let corrected: string = '';
   let processing: boolean;
   let selectedLangs: string[] = [];
+  let explanationText: string | null = null;
 
   editorContent.subscribe(v => original = v);
   selectedTargetLanguages.subscribe(v => selectedLangs = v);
@@ -18,6 +19,7 @@
     corrected = lang ? (v[lang] || '') : '';
   });
   isProcessing.subscribe(v => processing = v);
+  explanation.subscribe(v => explanationText = v);
 
   function computeDiff(orig: string, corr: string): Change[] {
     if (!orig || !corr) return [];
@@ -59,6 +61,13 @@
         <h4>Corrected version</h4>
         <div class="text-block">{corrected}</div>
       </div>
+
+      {#if explanationText}
+        <div class="explanation-section">
+          <h4>Why these changes?</h4>
+          <div class="explanation-text">{explanationText}</div>
+        </div>
+      {/if}
 
       <div class="action-bar">
         <button class="btn btn-accept" onclick={() => dispatch('apply')}>
@@ -168,6 +177,27 @@
     text-align: center;
     padding: 40px 20px;
     font-size: 14px;
+  }
+
+  .explanation-section {
+    border-top: 1px solid var(--border-light);
+    padding-top: 16px;
+  }
+
+  .explanation-section h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .explanation-text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
   }
 
   .action-bar {

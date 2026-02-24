@@ -11,8 +11,14 @@ pub fn correction_prompt(language: &str) -> String {
         2. ONLY correct text written in {} — fix grammar, unnatural expressions, and word choice.\n\
         3. Any text in other languages (English, Chinese, Korean, etc.) MUST be kept EXACTLY as-is, character for character, in the same position.\n\
         4. Do NOT remove, translate, or modify text that is not in {}.\n\
-        5. Keep all line breaks, emoji, and image references (![...](path)) unchanged.\n\
-        6. Return the COMPLETE diary text with only the {} portions corrected. No explanations.",
+        5. Keep all line breaks, emoji, and image references (![...](path)) unchanged.\n\n\
+        FORMAT your response with these two sections:\n\
+        [CORRECTED]\n\
+        (The complete diary text with only the {} portions corrected)\n\
+        [EXPLANATION]\n\
+        (Numbered list of changes with brief reasons. For each change:\n\
+        \"original\" → \"corrected\" — reason\n\
+        If the text is already perfect, write \"No corrections needed.\")",
         language, language, language, language
     )
 }
