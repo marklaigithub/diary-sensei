@@ -112,6 +112,9 @@
       document.documentElement.dataset.theme = cfg.theme;
       skipDirtyTracking = true;
       await loadEntries();
+      // Start with all entries closed — user opens via calendar interaction
+      const allIds = new Set(get(entries).map((e: EntryListItem) => e.id));
+      closedEntryIds.set(allIds);
       isDirty.set(false);
       skipDirtyTracking = false;
     } catch (e) {
@@ -147,12 +150,14 @@
       const entry: DiaryEntry = await invoke('read_entry', { id });
       skipDirtyTracking = true;
       explanation.set(null);
+      correctionOriginal.set('');
       currentEntry.set(entry);
       currentDate.set(entry.meta.date);
       editorContent.set(entry.original);
       entryTitle.set(entry.meta.title);
-      translations.set(entry.translations);
       const validMode = (entry.meta.mode === 'translation') ? 'translation' : 'correction';
+      // In correction mode, don't load stale correction results — they're ephemeral
+      translations.set(validMode === 'translation' ? entry.translations : {});
       appMode.set(validMode);
       selectedTargetLanguages.set(entry.meta.languages);
       isDirty.set(false);
@@ -173,6 +178,7 @@
     const date = event.detail;
     skipDirtyTracking = true;
     explanation.set(null);
+    correctionOriginal.set('');
     currentDate.set(date);
     currentEntryId.set(null);
     currentEntry.set(null);
@@ -194,6 +200,7 @@
     clearUndoState();
     skipDirtyTracking = true;
     explanation.set(null);
+    correctionOriginal.set('');
     currentDate.set(newDate);
     currentEntryId.set(null);
     currentEntry.set(null);
@@ -348,6 +355,7 @@
     }
     skipDirtyTracking = true;
     explanation.set(null);
+    correctionOriginal.set('');
     currentEntryId.set(null);
     currentEntry.set(null);
     editorContent.set('');
