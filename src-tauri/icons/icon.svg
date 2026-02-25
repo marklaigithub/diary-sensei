@@ -1,85 +1,133 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <!-- Warm background gradient -->
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F7E6C4"/>
-      <stop offset="100%" stop-color="#E8C88A"/>
+    <!-- Warm wood desk gradient -->
+    <linearGradient id="desk" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#C8A87C"/>
+      <stop offset="50%" stop-color="#B89468"/>
+      <stop offset="100%" stop-color="#A88458"/>
     </linearGradient>
-    <!-- Desk wood gradient -->
-    <linearGradient id="desk" x1="0" y1="0" x2="1" y2="0.5">
-      <stop offset="0%" stop-color="#8B6F47"/>
-      <stop offset="100%" stop-color="#A0825A"/>
+    <!-- Paper subtle gradient -->
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFEF8"/>
+      <stop offset="100%" stop-color="#F8F4EA"/>
     </linearGradient>
-    <!-- Warm lamp light -->
-    <radialGradient id="lamplight" cx="0.55" cy="0.58" r="0.35">
-      <stop offset="0%" stop-color="#FFF3D4" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#FFF3D4" stop-opacity="0"/>
-    </radialGradient>
+    <!-- Pen body gradient -->
+    <linearGradient id="penbody" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2A2A4A"/>
+      <stop offset="40%" stop-color="#3D3D5C"/>
+      <stop offset="100%" stop-color="#2A2A4A"/>
+    </linearGradient>
+    <!-- Pen cap gradient -->
+    <linearGradient id="pencap" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1A1A36"/>
+      <stop offset="50%" stop-color="#2D2D50"/>
+      <stop offset="100%" stop-color="#1A1A36"/>
+    </linearGradient>
+    <!-- Subtle shadow -->
+    <filter id="shadow" x="-5%" y="-5%" width="120%" height="120%">
+      <feDropShadow dx="2" dy="3" stdDeviation="6" flood-color="#6B5535" flood-opacity="0.25"/>
+    </filter>
+    <filter id="penshadow" x="-15%" y="-15%" width="140%" height="140%">
+      <feDropShadow dx="1" dy="2" stdDeviation="3" flood-color="#3A2A1A" flood-opacity="0.25"/>
+    </filter>
   </defs>
 
-  <!-- Background rounded square -->
-  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <!-- Desk surface (background) -->
+  <rect width="512" height="512" rx="108" fill="url(#desk)"/>
 
-  <!-- Subtle warm glow from lamp area -->
-  <ellipse cx="290" cy="290" rx="180" ry="150" fill="url(#lamplight)"/>
+  <!-- Subtle wood grain lines -->
+  <g opacity="0.08">
+    <line x1="0" y1="80" x2="512" y2="95" stroke="#6B5535" stroke-width="1.5"/>
+    <line x1="0" y1="160" x2="512" y2="170" stroke="#6B5535" stroke-width="1"/>
+    <line x1="0" y1="250" x2="512" y2="258" stroke="#6B5535" stroke-width="1.5"/>
+    <line x1="0" y1="340" x2="512" y2="345" stroke="#6B5535" stroke-width="1"/>
+    <line x1="0" y1="420" x2="512" y2="430" stroke="#6B5535" stroke-width="1.5"/>
+  </g>
 
-  <!-- Desk surface — angled perspective from 120° -->
-  <path d="M 60 340 Q 80 310 260 295 Q 440 280 470 320 L 480 420 Q 460 440 260 430 Q 60 420 50 400 Z" fill="url(#desk)" opacity="0.9"/>
-  <!-- Desk edge highlight -->
-  <path d="M 60 340 Q 80 310 260 295 Q 440 280 470 320" fill="none" stroke="#6B5535" stroke-width="2.5"/>
+  <!-- Paper — slightly rotated, with shadow -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="65" width="310" height="400" rx="6" fill="url(#paper)" transform="rotate(2 245 265)"/>
+  </g>
 
-  <!-- Paper/notebook on desk -->
-  <path d="M 200 305 L 340 290 L 355 370 L 215 385 Z" fill="#FFF9EE" stroke="#D4C5A9" stroke-width="1.5"/>
-  <!-- Paper lines -->
-  <line x1="215" y1="315" x2="340" y2="303" stroke="#E0D5C0" stroke-width="1"/>
-  <line x1="218" y1="330" x2="343" y2="318" stroke="#E0D5C0" stroke-width="1"/>
-  <line x1="221" y1="345" x2="346" y2="333" stroke="#E0D5C0" stroke-width="1"/>
-  <line x1="224" y1="360" x2="349" y2="348" stroke="#E0D5C0" stroke-width="1"/>
-  <!-- Written text marks (squiggles) -->
-  <path d="M 225 317 Q 235 313 250 316 Q 265 313 280 316 Q 295 313 310 316" fill="none" stroke="#5A4A3A" stroke-width="1.2" opacity="0.5"/>
-  <path d="M 228 332 Q 240 328 258 331 Q 275 328 290 331" fill="none" stroke="#5A4A3A" stroke-width="1.2" opacity="0.5"/>
+  <!-- Paper top edge fold hint -->
+  <path d="M 332 67 L 400 67 L 400 130 Z" fill="#EDE8DA" transform="rotate(2 245 265)" opacity="0.5"/>
 
-  <!-- Person — viewed from ~120° (behind-left, seeing back + right side) -->
-  <!-- Body/torso -->
-  <path d="M 200 270 Q 190 230 210 200 Q 230 195 260 200 Q 285 210 290 240 Q 295 270 300 295 Q 280 300 240 300 Q 210 298 200 270 Z" fill="#4A3728"/>
+  <!-- Ruled lines on paper -->
+  <g opacity="0.2" transform="rotate(2 245 265)">
+    <line x1="115" y1="120" x2="375" y2="120" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="155" x2="375" y2="155" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="190" x2="375" y2="190" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="225" x2="375" y2="225" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="260" x2="375" y2="260" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="295" x2="375" y2="295" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="330" x2="375" y2="330" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="365" x2="375" y2="365" stroke="#B8AE98" stroke-width="1"/>
+    <line x1="115" y1="400" x2="375" y2="400" stroke="#B8AE98" stroke-width="1"/>
+  </g>
 
-  <!-- Left shoulder (closer to viewer, more prominent) -->
-  <path d="M 195 230 Q 170 235 155 260 Q 150 280 160 300 Q 175 305 200 295 Q 200 270 195 230 Z" fill="#4A3728"/>
+  <!-- Handwritten text (dark ink) -->
+  <g transform="rotate(2 245 265)" opacity="0.55">
+    <!-- Line 1 -->
+    <path d="M 125 122 Q 145 118 175 122 Q 200 118 230 122 Q 255 118 285 122 Q 310 118 340 122" fill="none" stroke="#2A2A3A" stroke-width="1.8"/>
+    <!-- Line 2 -->
+    <path d="M 125 157 Q 150 153 185 157 Q 215 153 250 157 Q 275 153 300 157" fill="none" stroke="#2A2A3A" stroke-width="1.8"/>
+    <!-- Line 3 -->
+    <path d="M 125 192 Q 155 188 190 192 Q 220 188 260 192 Q 290 188 330 192 Q 350 188 365 192" fill="none" stroke="#2A2A3A" stroke-width="1.8"/>
+    <!-- Line 4 -->
+    <path d="M 125 227 Q 150 223 180 227 Q 210 223 245 227 Q 270 223 290 227" fill="none" stroke="#2A2A3A" stroke-width="1.8"/>
+    <!-- Line 5 -->
+    <path d="M 125 262 Q 155 258 195 262 Q 225 258 265 262 Q 295 258 340 262 Q 355 258 370 262" fill="none" stroke="#2A2A3A" stroke-width="1.8"/>
+    <!-- Line 6 -->
+    <path d="M 125 297 Q 150 293 175 297 Q 200 293 235 297 Q 260 293 280 297" fill="none" stroke="#2A2A3A" stroke-width="1.8"/>
+    <!-- Line 7 (partial - being written) -->
+    <path d="M 125 332 Q 155 328 190 332 Q 215 328 240 332" fill="none" stroke="#2A2A3A" stroke-width="1.8"/>
+  </g>
 
-  <!-- Right shoulder/arm reaching forward to write -->
-  <path d="M 270 215 Q 300 220 315 240 Q 325 260 320 280 Q 310 290 295 295 Q 290 270 270 215 Z" fill="#4A3728"/>
+  <!-- Red correction marks -->
+  <g transform="rotate(2 245 265)">
+    <!-- Correction on line 2: strikethrough + insertion -->
+    <line x1="195" y1="157" x2="250" y2="157" stroke="#CC3333" stroke-width="1.8" opacity="0.7"/>
+    <path d="M 220 162 L 220 172 Q 225 168 235 172 Q 245 168 252 172" fill="none" stroke="#CC3333" stroke-width="1.5" opacity="0.6"/>
 
-  <!-- Right forearm + hand writing -->
-  <path d="M 315 245 Q 330 270 310 300 Q 300 310 290 315 Q 285 305 295 285 Q 300 270 315 245 Z" fill="#5C4433"/>
-  <!-- Hand -->
-  <ellipse cx="293" cy="318" rx="12" ry="8" fill="#C4956A" transform="rotate(-15 293 318)"/>
+    <!-- Correction on line 4: circle + arrow -->
+    <ellipse cx="260" cy="227" rx="25" ry="12" fill="none" stroke="#CC3333" stroke-width="1.5" opacity="0.6"/>
 
-  <!-- Pen in hand -->
-  <line x1="285" y1="312" x2="265" y2="340" stroke="#3D3D5C" stroke-width="3" stroke-linecap="round"/>
-  <!-- Pen tip -->
-  <circle cx="263" cy="343" r="2" fill="#1A1A2E"/>
+    <!-- Small check mark on line 1 -->
+    <path d="M 350 115 L 355 122 L 365 108" fill="none" stroke="#CC3333" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+  </g>
 
-  <!-- Head — slightly turned right, we see back-left of head -->
-  <ellipse cx="240" cy="175" rx="38" ry="42" fill="#4A3728" transform="rotate(-8 240 175)"/>
-
-  <!-- Hair detail — short/neat -->
-  <path d="M 205 155 Q 220 130 250 128 Q 278 132 285 155 Q 280 140 250 138 Q 220 140 205 155 Z" fill="#2D1F14"/>
-
-  <!-- Ear (right side, partially visible) -->
-  <ellipse cx="275" cy="178" rx="7" ry="10" fill="#C4956A"/>
-
-  <!-- Side of face hint (cheek/jaw visible from this angle) -->
-  <path d="M 270 165 Q 280 170 282 185 Q 278 198 268 200" fill="#C4956A" opacity="0.8"/>
-
-  <!-- Glasses hint -->
-  <path d="M 268 172 Q 278 168 282 175 Q 280 182 272 183" fill="none" stroke="#5A4A6A" stroke-width="1.8" opacity="0.7"/>
-
-  <!-- Small desk lamp (upper right) -->
-  <path d="M 380 220 L 385 280 L 375 280 Z" fill="#6B5535" opacity="0.7"/>
-  <ellipse cx="380" cy="215" rx="22" ry="12" fill="#F5C842" opacity="0.8" transform="rotate(-10 380 215)"/>
-  <!-- Lamp glow -->
-  <ellipse cx="370" cy="240" rx="35" ry="25" fill="#FFF3D4" opacity="0.15"/>
-
-  <!-- Subtle shadow under person -->
-  <ellipse cx="250" cy="305" rx="70" ry="10" fill="#3D2B1F" opacity="0.15"/>
+  <!-- === PEN lying beside paper (lower-right desk area, casually set down) === -->
+  <g filter="url(#penshadow)" transform="translate(155 175)">
+    <g transform="rotate(110 224 250)">
+      <g transform="translate(224 250) scale(0.7) translate(-224 -250)">
+        <!-- Pen clip -->
+        <rect x="221" y="150" width="5" height="35" rx="1.5" fill="#4A4A6A" opacity="0.7"/>
+        <!-- Pen cap -->
+        <rect x="216" y="145" width="16" height="55" rx="5" fill="url(#pencap)"/>
+        <!-- Cap ring -->
+        <rect x="215" y="197" width="18" height="4" rx="1" fill="#8888AA" opacity="0.5"/>
+        <!-- Pen body -->
+        <rect x="216" y="201" width="16" height="110" rx="3" fill="url(#penbody)"/>
+        <!-- Body ring decoration -->
+        <rect x="215" y="205" width="18" height="3" rx="1" fill="#9090B0" opacity="0.4"/>
+        <rect x="215" y="211" width="18" height="2" rx="1" fill="#9090B0" opacity="0.3"/>
+        <!-- Pen grip section -->
+        <rect x="217" y="311" width="14" height="28" rx="3" fill="#3A3A58"/>
+        <!-- Grip texture lines -->
+        <g opacity="0.2">
+          <line x1="218" y1="317" x2="230" y2="317" stroke="#AAA" stroke-width="0.8"/>
+          <line x1="218" y1="321" x2="230" y2="321" stroke="#AAA" stroke-width="0.8"/>
+          <line x1="218" y1="325" x2="230" y2="325" stroke="#AAA" stroke-width="0.8"/>
+          <line x1="218" y1="329" x2="230" y2="329" stroke="#AAA" stroke-width="0.8"/>
+          <line x1="218" y1="333" x2="230" y2="333" stroke="#AAA" stroke-width="0.8"/>
+        </g>
+        <!-- Nib / tip -->
+        <path d="M 219 339 L 224 358 L 229 339 Z" fill="#C8A050"/>
+        <!-- Nib slit -->
+        <line x1="224" y1="341" x2="224" y2="356" stroke="#8A6A30" stroke-width="0.8"/>
+        <!-- Ink tip -->
+        <circle cx="224" cy="358" r="1.5" fill="#1A1A3A"/>
+      </g>
+    </g>
+  </g>
 </svg>
