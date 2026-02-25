@@ -127,5 +127,11 @@
     "original": "Originale",
     "corrected": "Corretto",
     "noAiResults": "Prima invia la correzione o traduzione AI"
+  },
+  "toast": {
+    "switchedToTranslation": "Passato alla modalità traduzione. Il contenuto del diario è preservato.",
+    "switchedToWriting": "Tornato alla modalità scrittura.",
+    "aiStillProcessing": "L'AI sta ancora elaborando in background.",
+    "bufferedResultApplied": "Il risultato dell'AI è pronto."
   }
 }

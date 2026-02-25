@@ -51,6 +51,33 @@
   let printMode: 'original' | 'full' | null = null;
   let showPrintDialog = false;
 
+  // Toast notification
+  let toastMessage: string = '';
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function showToast(msg: string, duration = 3000) {
+    if (toastTimer) clearTimeout(toastTimer);
+    toastMessage = msg;
+    toastTimer = setTimeout(() => {
+      toastMessage = '';
+      toastTimer = null;
+    }, duration);
+  }
+
+  // Race condition guard for AI requests
+  let requestToken = 0;
+
+  // Track which mode has a pending AI request (null = none)
+  let pendingRequestMode: string | null = null;
+
+  // Buffered AI result (when mode changed during request)
+  let bufferedResult: {
+    mode: string;
+    translations: Record<string, string>;
+    explanation: string | null;
+    correctionOriginal: string;
+  } | null = null;
+
   // Saved writing mode state (preserved when in translation mode)
   let savedWritingContent: string = '';
   let savedWritingTitle: string = '';
@@ -138,6 +165,7 @@
 
   async function handleEntrySelect(event: CustomEvent<string>) {
     if (!await checkDirty()) return;
+    requestToken++;
     clearUndoState();
     const id = event.detail;
     // If in translation mode, switch back to writing mode before loading
@@ -170,6 +198,7 @@
 
   async function handleDateSelect(event: CustomEvent<string>) {
     if (!await checkDirty()) return;
+    requestToken++;
     clearUndoState();
     // If in translation mode, switch back to writing mode
     if (modeVal === 'translation') {
@@ -228,6 +257,10 @@
   // NOTE: skipDirtyTracking is managed by the caller (appMode.subscribe guard),
   // NOT inside this function. This prevents premature guard zone termination.
   function handleModeSwitch(from: string, to: string) {
+    // Don't invalidate requestToken here — let in-flight requests complete to buffer.
+    // requestToken++ only happens on entry switch (handleEntrySelect etc.)
+    isProcessing.set(false);
+
     if (from === 'correction' && to === 'translation') {
       // Switching to translation: save writing state, clear editor for scratch pad
       savedWritingContent = editorVal;
@@ -239,13 +272,33 @@
       translations.set({});
       explanation.set(null);
       isDirty.set(false);
+      showToast(pendingRequestMode
+        ? get(t)('toast.aiStillProcessing')
+        : get(t)('toast.switchedToTranslation'));
     } else if (from === 'translation' && to === 'correction') {
       // Switching back to writing: restore writing state
       editorContent.set(savedWritingContent);
       entryTitle.set(savedWritingTitle);
-      translations.set({});
       explanation.set(null);
       isDirty.set(savedWritingDirty);
+
+      // Check for buffered result from before mode switch
+      if (bufferedResult?.mode === 'correction') {
+        translations.set(bufferedResult.translations);
+        explanation.set(bufferedResult.explanation);
+        correctionOriginal.set(bufferedResult.correctionOriginal);
+        bufferedResult = null;
+        pendingRequestMode = null;
+        showToast(get(t)('toast.bufferedResultApplied'));
+      } else if (pendingRequestMode === 'correction') {
+        // Request still in-flight — restore processing indicator
+        translations.set({});
+        isProcessing.set(true);
+        showToast(get(t)('toast.aiStillProcessing'));
+      } else {
+        translations.set({});
+        showToast(get(t)('toast.switchedToWriting'));
+      }
     }
   }
 
@@ -269,6 +322,12 @@
     if (!editorVal.trim()) return;
     isProcessing.set(true);
     error.set('');
+    bufferedResult = null;
+
+    // Capture token and mode to detect stale/cross-mode responses
+    const myToken = ++requestToken;
+    const requestMode = modeVal;
+    pendingRequestMode = modeVal;
 
     try {
       if (modeVal === 'correction') {
@@ -278,24 +337,53 @@
         const uiLangMap: Record<string, string> = {
           'en': 'English', 'zh-TW': '繁體中文', 'ja': '日本語', 'ko': '한국어', 'it': 'Italiano',
         };
+        const langKey = selectedLangsVal[0] || configVal.default_language;
         const result: CorrectionResult = await invoke('correct_text', {
           text: targetSection,
-          language: selectedLangsVal[0] || configVal.default_language,
+          language: langKey,
           explanationLanguage: uiLangMap[currentLocale] || 'English',
         });
-        translations.set({ [selectedLangsVal[0] || configVal.default_language]: result.corrected });
+        // Guard: discard if entry changed (different requestToken)
+        if (myToken !== requestToken) return;
+        // Buffer if mode changed during request
+        if (modeVal !== requestMode) {
+          bufferedResult = {
+            mode: requestMode,
+            translations: { [langKey]: result.corrected },
+            explanation: result.explanation || null,
+            correctionOriginal: targetSection,
+          };
+          return;
+        }
+        translations.set({ [langKey]: result.corrected });
         explanation.set(result.explanation || null);
       } else {
         const results: Record<string, string> = await invoke('translate_text', {
           text: editorVal,
           targetLanguages: selectedLangsVal,
         });
+        // Guard: discard if entry changed
+        if (myToken !== requestToken) return;
+        // Buffer if mode changed during request
+        if (modeVal !== requestMode) {
+          bufferedResult = {
+            mode: requestMode,
+            translations: results,
+            explanation: null,
+            correctionOriginal: '',
+          };
+          return;
+        }
         translations.set(results);
       }
     } catch (e: any) {
+      if (myToken !== requestToken) return;
       error.set(e.toString());
     } finally {
-      isProcessing.set(false);
+      if (myToken === requestToken) {
+        pendingRequestMode = null;
+        isProcessing.set(false);
+      }
     }
   }
 
@@ -315,7 +403,7 @@
         id: currentEntryIdVal,
         title: actualTitle,
         date: dateVal,
-        mode: 'correction',  // Always save as writing mode
+        mode: modeVal,
         languages: selectedLangsVal,
         original: contentToSave,
         translations: translationsVal,
@@ -348,6 +436,7 @@
 
   async function handleNewEntry() {
     if (!await checkDirty()) return;
+    requestToken++;
     clearUndoState();
     // If in translation mode, switch back to writing mode
     if (modeVal === 'translation') {
@@ -669,6 +758,10 @@
       </div>
     {/if}
   </aside>
+
+  {#if toastMessage}
+    <div class="toast-notification">{toastMessage}</div>
+  {/if}
 </div>
 
 <!-- Print-only view: completely separate from the app layout -->
@@ -1044,5 +1137,26 @@
     color: var(--text-muted);
     text-align: center;
     margin-top: -4px;
+  }
+
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-active);
+    color: var(--text-primary);
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    z-index: 1000;
+    animation: toast-fade-in 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  @keyframes toast-fade-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 </style>

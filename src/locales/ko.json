@@ -127,5 +127,11 @@
     "original": "원문",
     "corrected": "교정 후",
     "noAiResults": "먼저 AI 교정 또는 번역을 실행하세요"
+  },
+  "toast": {
+    "switchedToTranslation": "번역 모드로 전환했습니다. 일기 내용은 보존됩니다.",
+    "switchedToWriting": "작성 모드로 돌아왔습니다.",
+    "aiStillProcessing": "AI가 백그라운드에서 처리 중입니다.",
+    "bufferedResultApplied": "AI 결과가 준비되었습니다."
   }
 }

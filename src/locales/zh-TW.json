@@ -29,7 +29,7 @@
   "calendar": {
     "months": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
     "weekdays": ["一", "二", "三", "四", "五", "六", "日"],
-    "monthFormat": "{year} 年 {month} 月",
+    "monthFormat": "{year} 年 {month}",
     "more": "+{count} 則"
   },
   "entryList": {
@@ -127,5 +127,11 @@
     "original": "原文",
     "corrected": "修正後",
     "noAiResults": "請先送出 AI 校正或翻譯"
+  },
+  "toast": {
+    "switchedToTranslation": "已切換到翻譯模式，日記內容已保存。",
+    "switchedToWriting": "已切回寫作模式。",
+    "aiStillProcessing": "AI 仍在背景處理中。",
+    "bufferedResultApplied": "AI 結果已就緒。"
   }
 }

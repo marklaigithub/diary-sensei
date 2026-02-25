@@ -127,5 +127,11 @@
     "original": "原文",
     "corrected": "添削後",
     "noAiResults": "先にAI添削または翻訳を実行してください"
+  },
+  "toast": {
+    "switchedToTranslation": "翻訳モードに切り替えました。日記の内容は保存されています。",
+    "switchedToWriting": "執筆モードに戻りました。",
+    "aiStillProcessing": "AIがバックグラウンドで処理中です。",
+    "bufferedResultApplied": "AI結果の準備ができました。"
   }
 }
