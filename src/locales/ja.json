@@ -15,7 +15,16 @@
     "correctionApplied": "添削結果をエディタに適用しました。",
     "undo": "元に戻す（{countdown}）",
     "newEntryTitle": "今日の新規日記",
-    "deleteEntryTitle": "日記を削除"
+    "deleteEntryTitle": "日記を削除",
+    "defaultDiaryTitle": "日記"
+  },
+  "error": {
+    "invalidDate": "日付が無効です。有効な日付を選択してください（YYYY-MM-DD）。",
+    "loadFailed": "日記の読み込みに失敗しました",
+    "saveFailed": "保存に失敗しました：{detail}",
+    "deleteFailed": "削除に失敗しました：{detail}",
+    "printFailed": "印刷に失敗しました：{detail}",
+    "translationFailed": "翻訳に失敗しました：{detail}"
   },
   "calendar": {
     "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
@@ -93,7 +102,9 @@
     "ollamaLlama3": "Llama 3.1 8B（Meta）",
     "ollamaMistral": "Mistral 7B（Mistral AI）",
     "ollamaPhi3": "Phi-3 Medium（Microsoft）",
-    "editLanguage": "編集"
+    "editLanguage": "編集",
+    "deleteLanguage": "削除",
+    "saveFailed": "エラー：{detail}"
   },
   "theme": {
     "warm": "ウォーム",

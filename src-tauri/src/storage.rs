@@ -35,11 +35,12 @@ pub struct EntryListItem {
     pub updated_at: Option<String>,
 }
 
-fn entries_dir() -> PathBuf {
+fn entries_dir() -> Result<PathBuf, String> {
     let config = load_app_config();
-    let home = dirs::home_dir().unwrap_or_default();
+    let home = dirs::home_dir()
+        .ok_or_else(|| "Cannot determine home directory".to_string())?;
     let dir = config.entries_dir.replace('~', &home.to_string_lossy());
-    PathBuf::from(dir)
+    Ok(PathBuf::from(dir))
 }
 
 pub fn generate_entry_id(date: &str) -> String {
@@ -48,7 +49,7 @@ pub fn generate_entry_id(date: &str) -> String {
 }
 
 pub fn list_entries_for_month(year: i32, month: u32) -> Result<Vec<EntryListItem>, String> {
-    let dir = entries_dir()
+    let dir = entries_dir()?
         .join(format!("{:04}", year))
         .join(format!("{:02}", month));
 
@@ -90,7 +91,7 @@ pub fn list_entries_for_month(year: i32, month: u32) -> Result<Vec<EntryListItem
 }
 
 pub fn search_entries(query: &str) -> Result<Vec<EntryListItem>, String> {
-    let base = entries_dir();
+    let base = entries_dir()?;
     if !base.exists() {
         return Ok(vec![]);
     }
@@ -164,7 +165,7 @@ pub fn read_entry_by_id(id: &str) -> Result<DiaryEntry, String> {
         return Err("Invalid date in id".to_string());
     }
 
-    let path = entries_dir()
+    let path = entries_dir()?
         .join(parts[0])
         .join(parts[1])
         .join(format!("{}.md", id));
@@ -185,7 +186,7 @@ pub fn save_entry_to_disk(entry: &DiaryEntry) -> Result<(), String> {
         return Err("Invalid date format".to_string());
     }
 
-    let dir = entries_dir().join(parts[0]).join(parts[1]);
+    let dir = entries_dir()?.join(parts[0]).join(parts[1]);
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 
     let path = dir.join(format!("{}.md", id));
@@ -203,7 +204,7 @@ pub fn save_image_to_disk(id: &str, filename: &str, data: &[u8]) -> Result<Strin
         return Err("Invalid date in id".to_string());
     }
 
-    let img_dir = entries_dir()
+    let img_dir = entries_dir()?
         .join(parts[0])
         .join(parts[1])
         .join(id);
@@ -225,7 +226,7 @@ pub fn delete_entry_from_disk(id: &str) -> Result<(), String> {
         return Err("Invalid date in id".to_string());
     }
 
-    let dir = entries_dir().join(parts[0]).join(parts[1]);
+    let dir = entries_dir()?.join(parts[0]).join(parts[1]);
     let md_path = dir.join(format!("{}.md", id));
     let img_dir = dir.join(id);
 

@@ -15,7 +15,16 @@
     "correctionApplied": "批改內容已套用至編輯器。",
     "undo": "復原（{countdown}）",
     "newEntryTitle": "新增當日日記",
-    "deleteEntryTitle": "刪除日記"
+    "deleteEntryTitle": "刪除日記",
+    "defaultDiaryTitle": "日記"
+  },
+  "error": {
+    "invalidDate": "日期格式無效，請選擇有效日期（YYYY-MM-DD）。",
+    "loadFailed": "載入日記失敗",
+    "saveFailed": "儲存失敗：{detail}",
+    "deleteFailed": "刪除失敗：{detail}",
+    "printFailed": "列印失敗：{detail}",
+    "translationFailed": "翻譯失敗：{detail}"
   },
   "calendar": {
     "months": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
@@ -93,7 +102,9 @@
     "ollamaLlama3": "Llama 3.1 8B（Meta）",
     "ollamaMistral": "Mistral 7B（Mistral AI）",
     "ollamaPhi3": "Phi-3 Medium（Microsoft）",
-    "editLanguage": "編輯"
+    "editLanguage": "編輯",
+    "deleteLanguage": "刪除",
+    "saveFailed": "錯誤：{detail}"
   },
   "theme": {
     "warm": "暖色",

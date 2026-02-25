@@ -74,9 +74,10 @@
   }
 
   function copyBubbleText() {
-    navigator.clipboard.writeText(bubbleText);
-    copied = true;
-    setTimeout(() => { copied = false; }, 1500);
+    navigator.clipboard.writeText(bubbleText).then(() => {
+      copied = true;
+      setTimeout(() => { copied = false; }, 1500);
+    }).catch(() => { /* clipboard access denied — silent fallback */ });
   }
 
   function closeBubble() {

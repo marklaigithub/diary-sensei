@@ -15,7 +15,16 @@
     "correctionApplied": "Correzione applicata all'editor.",
     "undo": "Annulla ({countdown})",
     "newEntryTitle": "Nuova voce per la data corrente",
-    "deleteEntryTitle": "Elimina voce"
+    "deleteEntryTitle": "Elimina voce",
+    "defaultDiaryTitle": "diario"
+  },
+  "error": {
+    "invalidDate": "Data non valida. Seleziona una data valida (AAAA-MM-GG).",
+    "loadFailed": "Impossibile caricare la voce",
+    "saveFailed": "Salvataggio fallito: {detail}",
+    "deleteFailed": "Eliminazione fallita: {detail}",
+    "printFailed": "Stampa fallita: {detail}",
+    "translationFailed": "Traduzione fallita: {detail}"
   },
   "calendar": {
     "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
@@ -93,7 +102,9 @@
     "ollamaLlama3": "Llama 3.1 8B (Meta)",
     "ollamaMistral": "Mistral 7B (Mistral AI)",
     "ollamaPhi3": "Phi-3 Medium (Microsoft)",
-    "editLanguage": "Modifica"
+    "editLanguage": "Modifica",
+    "deleteLanguage": "Elimina",
+    "saveFailed": "Errore: {detail}"
   },
   "theme": {
     "warm": "Caldo",

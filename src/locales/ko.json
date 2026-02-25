@@ -15,7 +15,16 @@
     "correctionApplied": "교정 내용이 편집기에 적용되었습니다.",
     "undo": "실행 취소 ({countdown})",
     "newEntryTitle": "현재 날짜에 새 일기",
-    "deleteEntryTitle": "일기 삭제"
+    "deleteEntryTitle": "일기 삭제",
+    "defaultDiaryTitle": "일기"
+  },
+  "error": {
+    "invalidDate": "날짜가 유효하지 않습니다. 올바른 날짜를 선택하세요 (YYYY-MM-DD).",
+    "loadFailed": "일기를 불러오지 못했습니다",
+    "saveFailed": "저장 실패: {detail}",
+    "deleteFailed": "삭제 실패: {detail}",
+    "printFailed": "인쇄 실패: {detail}",
+    "translationFailed": "번역 실패: {detail}"
   },
   "calendar": {
     "months": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
@@ -93,7 +102,9 @@
     "ollamaLlama3": "Llama 3.1 8B (Meta)",
     "ollamaMistral": "Mistral 7B (Mistral AI)",
     "ollamaPhi3": "Phi-3 Medium (Microsoft)",
-    "editLanguage": "편집"
+    "editLanguage": "편집",
+    "deleteLanguage": "삭제",
+    "saveFailed": "오류: {detail}"
   },
   "theme": {
     "warm": "따뜻한",

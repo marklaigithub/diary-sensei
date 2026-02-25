@@ -22,9 +22,10 @@
   }
 
   function copyToClipboard(text: string, langCode: string) {
-    navigator.clipboard.writeText(text);
-    copiedLang = langCode;
-    setTimeout(() => { copiedLang = null; }, 1500);
+    navigator.clipboard.writeText(text).then(() => {
+      copiedLang = langCode;
+      setTimeout(() => { copiedLang = null; }, 1500);
+    }).catch(() => { /* clipboard access denied — silent fallback */ });
   }
 
   $: hasTranslations = Object.keys(translationsVal).length > 0;

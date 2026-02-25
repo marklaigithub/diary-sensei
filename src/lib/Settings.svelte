@@ -7,6 +7,7 @@
   let configVal: AppConfig;
   let saving = $state(false);
   let saveMsg = $state('');
+  let saveIsError = $state(false);
 
   config.subscribe(v => configVal = v);
 
@@ -91,6 +92,7 @@
   async function handleSave() {
     saving = true;
     saveMsg = '';
+    saveIsError = false;
     try {
       const updated: AppConfig = {
         ...configVal,
@@ -108,7 +110,8 @@
       saveMsg = $t('settings.saved');
       setTimeout(() => saveMsg = '', 2000);
     } catch (e: any) {
-      saveMsg = 'Error: ' + e.toString();
+      saveMsg = $t('settings.saveFailed', { values: { detail: e.toString() } });
+      saveIsError = true;
     } finally {
       saving = false;
     }
@@ -238,7 +241,7 @@
               <span class="lang-format">{lang.date_format}</span>
               <div class="lang-item-actions">
                 <button class="lang-action-btn" onclick={() => startEditLang(idx)} title={$t('settings.editLanguage')}>✎</button>
-                <button class="lang-action-btn delete" onclick={() => deleteLang(idx)} title={$t('settings.cancel')}>✕</button>
+                <button class="lang-action-btn delete" onclick={() => deleteLang(idx)} title={$t('settings.deleteLanguage')}>✕</button>
               </div>
             </div>
           {/if}
@@ -262,7 +265,7 @@
 
   <div class="settings-footer">
     {#if saveMsg}
-      <span class="save-msg" class:error={saveMsg.startsWith('Error')}>{saveMsg}</span>
+      <span class="save-msg" class:error={saveIsError}>{saveMsg}</span>
     {/if}
     <button class="btn btn-secondary" onclick={close}>{$t('settings.cancel')}</button>
     <button class="btn btn-primary" onclick={handleSave} disabled={saving}>

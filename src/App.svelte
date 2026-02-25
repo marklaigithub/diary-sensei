@@ -2,7 +2,7 @@
   import { invoke } from '@tauri-apps/api/core';
   import { confirm } from '@tauri-apps/plugin-dialog';
   import { onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
+  import { t, locale } from 'svelte-i18n';
   import { get } from 'svelte/store';
   import Calendar from './lib/Calendar.svelte';
   import EntryList from './lib/EntryList.svelte';
@@ -58,10 +58,14 @@
 
   config.subscribe(v => configVal = v);
   showSettings.subscribe(v => showSettingsVal = v);
-  let prevMode: string = 'correction';
+  let prevMode: string = get(appMode);
   appMode.subscribe(v => {
     if (v !== prevMode) {
+      // Guard: if skipDirtyTracking is already true (caller manages it), don't interfere
+      const wasSkipping = skipDirtyTracking;
+      if (!wasSkipping) skipDirtyTracking = true;
       handleModeSwitch(prevMode, v);
+      if (!wasSkipping) skipDirtyTracking = false;
       prevMode = v;
     }
     modeVal = v;
@@ -80,6 +84,7 @@
   currentEntryId.subscribe(v => currentEntryIdVal = v);
 
   // Track editor/title changes to set dirty flag
+  // IMPORTANT: skipDirtyTracking guard zones MUST be synchronous (no await inside)
   let skipDirtyTracking = false;
   editorContent.subscribe(() => { if (!skipDirtyTracking) isDirty.set(true); });
   entryTitle.subscribe(() => { if (!skipDirtyTracking) isDirty.set(true); });
@@ -111,6 +116,7 @@
       skipDirtyTracking = false;
     } catch (e) {
       console.error('Failed to load config:', e);
+      skipDirtyTracking = false;
     }
   });
 
@@ -146,13 +152,14 @@
       editorContent.set(entry.original);
       entryTitle.set(entry.meta.title);
       translations.set(entry.translations);
-      appMode.set(entry.meta.mode as any);
+      const validMode = (entry.meta.mode === 'translation') ? 'translation' : 'correction';
+      appMode.set(validMode);
       selectedTargetLanguages.set(entry.meta.languages);
       isDirty.set(false);
       skipDirtyTracking = false;
     } catch (e) {
       skipDirtyTracking = false;
-      error.set('Failed to load entry');
+      error.set(get(t)('error.loadFailed'));
     }
   }
 
@@ -211,6 +218,8 @@
     await loadEntries();
   }
 
+  // NOTE: skipDirtyTracking is managed by the caller (appMode.subscribe guard),
+  // NOT inside this function. This prevents premature guard zone termination.
   function handleModeSwitch(from: string, to: string) {
     if (from === 'correction' && to === 'translation') {
       // Switching to translation: save writing state, clear editor for scratch pad
@@ -219,21 +228,17 @@
       savedWritingDirty = dirtyVal;
 
       clearUndoState();
-      skipDirtyTracking = true;
       editorContent.set('');
       translations.set({});
       explanation.set(null);
       isDirty.set(false);
-      skipDirtyTracking = false;
     } else if (from === 'translation' && to === 'correction') {
       // Switching back to writing: restore writing state
-      skipDirtyTracking = true;
       editorContent.set(savedWritingContent);
       entryTitle.set(savedWritingTitle);
       translations.set({});
       explanation.set(null);
       isDirty.set(savedWritingDirty);
-      skipDirtyTracking = false;
     }
   }
 
@@ -262,14 +267,14 @@
       if (modeVal === 'correction') {
         const targetSection = extractTargetSection(editorVal);
         correctionOriginal.set(targetSection);
-        const uiLocale = localStorage.getItem('diary-sensei-locale') || 'en';
+        const currentLocale = get(locale) || 'en';
         const uiLangMap: Record<string, string> = {
           'en': 'English', 'zh-TW': '繁體中文', 'ja': '日本語', 'ko': '한국어', 'it': 'Italiano',
         };
         const result: CorrectionResult = await invoke('correct_text', {
           text: targetSection,
           language: selectedLangsVal[0] || configVal.default_language,
-          explanationLanguage: uiLangMap[uiLocale] || 'English',
+          explanationLanguage: uiLangMap[currentLocale] || 'English',
         });
         translations.set({ [selectedLangsVal[0] || configVal.default_language]: result.corrected });
         explanation.set(result.explanation || null);
@@ -290,7 +295,7 @@
   async function handleSave() {
     // Validate date format before saving
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
-      error.set('Invalid date. Please select a valid date (YYYY-MM-DD).');
+      error.set(get(t)('error.invalidDate'));
       return;
     }
 
@@ -298,7 +303,7 @@
       // In translation mode, save the main diary content, not the scratch pad
       const contentToSave = modeVal === 'translation' ? savedWritingContent : editorVal;
       const titleToSave = modeVal === 'translation' ? savedWritingTitle : titleVal;
-      const actualTitle = titleToSave || `${dateVal} diary`;
+      const actualTitle = titleToSave || `${dateVal} ${get(t)('app.defaultDiaryTitle')}`;
       const savedId: string = await invoke('save_entry', {
         id: currentEntryIdVal,
         title: actualTitle,
@@ -323,7 +328,7 @@
       isDirty.set(false);
       error.set('');
     } catch (e: any) {
-      error.set('Save failed: ' + e.toString());
+      error.set(get(t)('error.saveFailed', { values: { detail: e.toString() } }));
     }
   }
 
@@ -396,7 +401,7 @@
       isDirty.set(false);
       skipDirtyTracking = false;
     } catch (e: any) {
-      error.set('Delete failed: ' + e.toString());
+      error.set(get(t)('error.deleteFailed', { values: { detail: e.toString() } }));
     }
   }
 
@@ -512,7 +517,7 @@
       }
     } catch (e: any) {
       if (editorRef) {
-        editorRef.setQuickTranslation(`Error: ${e.toString()}`);
+        editorRef.setQuickTranslation(get(t)('error.translationFailed', { values: { detail: e.toString() } }));
       }
     }
   }
@@ -529,7 +534,7 @@
     try {
       await invoke('print_page');
     } catch (e: any) {
-      error.set('Print failed: ' + e.toString());
+      error.set(get(t)('error.printFailed', { values: { detail: e.toString() } }));
     } finally {
       printMode = null;
     }
@@ -662,7 +667,7 @@
 {#if printMode}
 <div class="print-view">
   <div class="print-header">
-    <h1>{titleVal || `${dateVal} diary`}</h1>
+    <h1>{titleVal || `${dateVal} ${$t('app.defaultDiaryTitle')}`}</h1>
     <div class="print-date">{dateVal}</div>
   </div>
 

@@ -15,7 +15,16 @@
     "correctionApplied": "Correction applied to editor.",
     "undo": "Undo ({countdown})",
     "newEntryTitle": "New entry for current date",
-    "deleteEntryTitle": "Delete entry"
+    "deleteEntryTitle": "Delete entry",
+    "defaultDiaryTitle": "diary"
+  },
+  "error": {
+    "invalidDate": "Invalid date. Please select a valid date (YYYY-MM-DD).",
+    "loadFailed": "Failed to load entry",
+    "saveFailed": "Save failed: {detail}",
+    "deleteFailed": "Delete failed: {detail}",
+    "printFailed": "Print failed: {detail}",
+    "translationFailed": "Translation failed: {detail}"
   },
   "calendar": {
     "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
@@ -93,7 +102,9 @@
     "ollamaLlama3": "Llama 3.1 8B (Meta)",
     "ollamaMistral": "Mistral 7B (Mistral AI)",
     "ollamaPhi3": "Phi-3 Medium (Microsoft)",
-    "editLanguage": "Edit"
+    "editLanguage": "Edit",
+    "deleteLanguage": "Delete",
+    "saveFailed": "Error: {detail}"
   },
   "theme": {
     "warm": "Warm",
