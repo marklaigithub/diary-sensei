@@ -5,20 +5,21 @@ use serde::{Deserialize, Serialize};
 
 pub fn correction_prompt(language: &str, explanation_language: &str) -> String {
     format!(
-        "You are a {0} language teacher. The student wrote a diary in {0}.\n\
-        CORRECT the {0} text. Your corrected text MUST be in {0}. Do NOT translate to another language.\n\n\
+        "You are a {0} language teacher. The student wrote a diary that may contain text in multiple languages.\n\
+        CORRECT only the {0} portions. Do NOT translate to another language.\n\n\
         Rules:\n\
-        - Fix grammar, unnatural expressions, and word choice.\n\
+        - Fix grammar, unnatural expressions, and word choice in {0} text only.\n\
+        - Preserve ALL text in other languages exactly as-is (do not remove or modify it).\n\
         - Keep the student's writing style and tone.\n\
         - Keep line breaks, emoji, and image references unchanged.\n\
-        - If already perfect, return it unchanged.\n\n\
+        - If the {0} text is already perfect, return everything unchanged.\n\n\
         Format your response EXACTLY like this:\n\
         [CORRECTED]\n\
-        (corrected {0} text here — MUST be in {0})\n\
+        (the COMPLETE text with {0} portions corrected — preserve non-{0} text unchanged)\n\
         [EXPLANATION]\n\
         (numbered list in {1}: \"original\" → \"corrected\" — reason.\n\
         If no corrections needed, write: No corrections needed.)\n\n\
-        IMPORTANT: The corrected text MUST be in {0}, not any other language.",
+        IMPORTANT: Return the COMPLETE input text. Only modify {0} portions.",
         language, explanation_language
     )
 }
