@@ -83,6 +83,21 @@
   let savedWritingTitle: string = '';
   let savedWritingDirty: boolean = false;
 
+  // Auto-save: debounce user edits, save after 3 seconds of inactivity
+  let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleAutoSave() {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+      autoSaveTimer = null;
+      if (dirtyVal && dateVal && editorVal.trim()) {
+        handleSave();
+      }
+    }, 3000);
+  }
+  function cancelAutoSave() {
+    if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null; }
+  }
+
   config.subscribe(v => configVal = v);
   showSettings.subscribe(v => showSettingsVal = v);
   let prevMode: string = get(appMode);
@@ -113,8 +128,18 @@
   // Track editor/title changes to set dirty flag
   // IMPORTANT: skipDirtyTracking guard zones MUST be synchronous (no await inside)
   let skipDirtyTracking = false;
-  editorContent.subscribe(() => { if (!skipDirtyTracking) isDirty.set(true); });
-  entryTitle.subscribe(() => { if (!skipDirtyTracking) isDirty.set(true); });
+  editorContent.subscribe(() => {
+    if (!skipDirtyTracking) {
+      isDirty.set(true);
+      if (modeVal !== 'translation') scheduleAutoSave();
+    }
+  });
+  entryTitle.subscribe(() => {
+    if (!skipDirtyTracking) {
+      isDirty.set(true);
+      if (modeVal !== 'translation') scheduleAutoSave();
+    }
+  });
 
   function clearUndoState() {
     if (undoTimer) {
@@ -122,6 +147,7 @@
       undoTimer = null;
     }
     undoState = null;
+    cancelAutoSave();
   }
 
   async function checkDirty(): Promise<boolean> {
@@ -388,6 +414,7 @@
   }
 
   async function handleSave() {
+    cancelAutoSave();
     // Validate date format before saving
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
       error.set(get(t)('error.invalidDate'));
